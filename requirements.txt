@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+scapy
+pydantic
+psutil
+scikit-learn
+SQLAlchemy
+httpx

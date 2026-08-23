@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroGuard — Network Security</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+
+<!-- ── Critical Threat Sheet ──────────────── -->
+<div id="critical-modal" class="sheet-bg hidden">
+    <div class="sheet">
+        <div class="sheet-hd">
+            <div class="sheet-ico red">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            <div>
+                <div class="sheet-title">Critical Threat</div>
+                <div class="sheet-sub">Evil Twin Access Point detected on your network</div>
+            </div>
+            <button class="sheet-x" id="btn-ack-alert">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="sheet-bd">
+            <div class="info-grid">
+                <div class="info-field">
+                    <span class="info-field-label">Network (SSID)</span>
+                    <span class="info-field-val" id="modal-ssid">—</span>
+                </div>
+                <div class="info-field">
+                    <span class="info-field-label">Spoofed MAC (BSSID)</span>
+                    <span class="info-field-val mono red" id="modal-bssid">—</span>
+                </div>
+                <div class="info-field">
+                    <span class="info-field-label">Channel</span>
+                    <span class="info-field-val" id="modal-channel">—</span>
+                </div>
+                <div class="info-field">
+                    <span class="info-field-label">Signal (RSSI)</span>
+                    <span class="info-field-val" id="modal-rssi">—</span>
+                </div>
+            </div>
+            <div class="factors-wrap">
+                <div class="factors-label">Detection Vectors</div>
+                <div class="factors-body" id="modal-factors"></div>
+            </div>
+        </div>
+        <div class="sheet-ft">
+            <button class="btn btn-default btn-sm" id="btn-ack-alert-2">Dismiss</button>
+            <button class="btn btn-default btn-sm" id="btn-download-pcap">Export PCAP</button>
+            <button class="btn btn-default btn-sm" id="btn-export-forensics">Export Report</button>
+            <button class="btn btn-danger btn-sm" id="btn-trigger-wips" style="margin-left:auto">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Engage WIPS
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Target Inspection Sheet ──────────── -->
+<div id="target-modal" class="sheet-bg hidden">
+    <div class="sheet">
+        <div class="sheet-hd">
+            <div class="sheet-ico orange">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <div>
+                <div class="sheet-title">Target Inspection</div>
+                <div class="sheet-sub">Rogue AP forensics &amp; countermeasure control</div>
+            </div>
+            <button class="sheet-x" id="btn-close-target">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="sheet-bd">
+            <div class="info-grid">
+                <div class="info-field">
+                    <span class="info-field-label">Network (SSID)</span>
+                    <span class="info-field-val" id="target-ssid">—</span>
+                </div>
+                <div class="info-field">
+                    <span class="info-field-label">Hardware (BSSID)</span>
+                    <span class="info-field-val mono" id="target-bssid">—</span>
+                </div>
+                <div class="info-field">
+                    <span class="info-field-label">Signal (RSSI)</span>
+                    <span class="info-field-val" id="target-rssi">—</span>
+                </div>
+                <div class="info-field">
+                    <span class="info-field-label">Threat Score</span>
+                    <span class="info-field-val orange" id="target-score">—</span>
+                </div>
+            </div>
+            <div class="factors-wrap" style="margin-bottom: 12px;">
+                <div class="factors-label">Anomaly Forensics</div>
+                <div class="factors-body" id="target-factors"></div>
+            </div>
+            <div class="factors-wrap">
+                <div class="factors-label" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>Compromised Clients (Victims)</span>
+                    <span class="count-chip red" id="target-clients-count">0</span>
+                </div>
+                <div class="factors-body" id="target-clients">
+                    <div class="empty-state" style="padding: 12px 0;">No clients detected yet.</div>
+                </div>
+            </div>
+        </div>
+        <div class="sheet-ft" style="flex-direction: column; gap: 12px;">
+            <div class="attack-mode-selector" style="display: flex; gap: 8px; flex-direction: column; font-size: 13px;">
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="radio" name="attack-mode" value="targeted" checked>
+                    <span><strong>Targeted Containment</strong> (Deauth Victims Only)</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="radio" name="attack-mode" value="broadcast">
+                    <span><strong>Full BSSID Takedown</strong> (Broadcast Deauth)</span>
+                </label>
+            </div>
+            <button class="btn btn-danger" id="btn-target-attack" style="width:100%">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Engage WIPS — Take Down
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ── App Shell ─────────────────────────── -->
+<div class="app">
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
+            <span class="brand-name">AeroGuard</span>
+            <span class="brand-ver">v2.0</span>
+        </div>
+
+        <div class="sidebar-scroll">
+
+            <div class="sgroup">
+                <p class="sgroup-title">System Health</p>
+                <div class="srow"><span class="srow-label">CPU</span><span class="srow-val" id="stat-cpu">—</span></div>
+                <div class="srow"><span class="srow-label">Memory</span><span class="srow-val" id="stat-ram">—</span></div>
+                <div class="srow"><span class="srow-label">Engine</span><span class="srow-val orange" id="stat-sniffer">Idle</span></div>
+            </div>
+
+            <div class="sgroup">
+                <p class="sgroup-title">Sensor Interface</p>
+                <select id="interface-select" class="ui-select">
+                    <option value="">Loading sensors…</option>
+                </select>
+                <div class="btn-row" style="margin-top:6px">
+                    <button id="btn-monitor" class="btn btn-default btn-sm" style="flex:1">Monitor</button>
+                    <button id="btn-managed" class="btn btn-default btn-sm" style="flex:1">Managed</button>
+                </div>
+                <button id="btn-baseline" class="btn btn-primary btn-sm btn-full" style="margin-top:6px">Start Baseline Scan</button>
+                <p id="baseline-status" class="hidden" style="font-size:11px;color:var(--label-3);text-align:center;margin-top:4px">
+                    Scanning: <span id="baseline-timer">180</span>s
+                </p>
+            </div>
+
+            <div class="sgroup">
+                <p class="sgroup-title">Detection Sensitivity</p>
+                <div class="slider-item">
+                    <div class="slider-meta">
+                        <span class="slider-meta-label">Deauth Trigger (fps)</span>
+                        <span class="slider-meta-val" id="val-deauth">10</span>
+                    </div>
+                    <input type="range" id="slide-deauth" min="1" max="50" value="10" class="ui-slider">
+                </div>
+                <div class="slider-item">
+                    <div class="slider-meta">
+                        <span class="slider-meta-label">RSSI Variance (dBm)</span>
+                        <span class="slider-meta-val" id="val-rssi">15</span>
+                    </div>
+                    <input type="range" id="slide-rssi" min="5" max="40" value="15" class="ui-slider">
+                </div>
+                <div class="slider-item">
+                    <div class="slider-meta">
+                        <span class="slider-meta-label">Critical Cutoff</span>
+                        <span class="slider-meta-val" id="val-cutoff">70</span>
+                    </div>
+                    <input type="range" id="slide-cutoff" min="50" max="100" value="70" class="ui-slider">
+                </div>
+            </div>
+
+            <div class="sgroup">
+                <div class="toggle-row">
+                    <p class="sgroup-title" style="margin:0">Countermeasures (WIPS)</p>
+                    <label class="ui-toggle">
+                        <input type="checkbox" id="toggle-wips">
+                        <span class="ui-toggle-track"></span>
+                    </label>
+                </div>
+                <div class="slider-item" style="margin-top:8px">
+                    <div class="slider-meta">
+                        <span class="slider-meta-label">Engage Threshold</span>
+                        <span class="slider-meta-val" id="val-wips-threshold">60</span>
+                    </div>
+                    <input type="range" id="slide-wips-threshold" min="30" max="100" value="60" class="ui-slider">
+                </div>
+                <div class="slider-item">
+                    <div class="slider-meta">
+                        <span class="slider-meta-label">Deauth Burst</span>
+                        <span class="slider-meta-val" id="val-wips-burst">5</span>
+                    </div>
+                    <input type="range" id="slide-wips-burst" min="1" max="20" value="5" class="ui-slider">
+                </div>
+                <div class="slider-item">
+                    <div class="slider-meta">
+                        <span class="slider-meta-label">Attack Interval (s)</span>
+                        <span class="slider-meta-val" id="val-wips-interval">2.0</span>
+                    </div>
+                    <input type="range" id="slide-wips-interval" min="0.5" max="10.0" step="0.5" value="2.0" class="ui-slider">
+                </div>
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- Main -->
+    <div class="main">
+        <header class="topbar">
+            <div class="topbar-left">
+                <div class="meta-item">
+                    <span class="meta-label">Interface</span>
+                    <code class="meta-val accent" id="active-iface">NONE</code>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Threats</span>
+                    <code class="meta-val red" id="hdr-threat-count">0</code>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Endpoints</span>
+                    <code class="meta-val" id="hdr-ap-count">0</code>
+                </div>
+                <code class="topbar-clock" id="live-clock">00:00:00 UTC</code>
+            </div>
+            <div class="topbar-right">
+                <div class="wips-pill" id="wips-status-badge">
+                    <span class="wips-pill-dot" id="wips-dot"></span>
+                    <span id="wips-label">WIPS Offline</span>
+                </div>
+                <button class="btn btn-default btn-sm theme-toggle" id="btn-theme" title="Toggle dark mode" aria-label="Toggle dark mode">
+                    <svg id="theme-icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <svg id="theme-icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                </button>
+                <button class="btn btn-default btn-sm" id="btn-mute">Mute Alerts</button>
+            </div>
+        </header>
+
+        <div class="main-body">
+
+            <!-- KPI Row -->
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <div class="kpi-icon blue">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+                    </div>
+                    <div class="kpi-text">
+                        <div class="kpi-num" id="kpi-endpoints">0</div>
+                        <div class="kpi-label">Endpoints Detected</div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon red">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
+                    <div class="kpi-text">
+                        <div class="kpi-num red" id="kpi-threats">0</div>
+                        <div class="kpi-label">Active Threats</div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon green">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    </div>
+                    <div class="kpi-text">
+                        <div class="kpi-num" id="kpi-pkts">0</div>
+                        <div class="kpi-label">Packets / Second</div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon gray">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    </div>
+                    <div class="kpi-text">
+                        <div class="kpi-num" id="kpi-deauths" style="font-size:20px">Demo</div>
+                        <div class="kpi-label">WIPS Mode</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mid Row: Sensor + Chart -->
+            <div class="mid-row">
+                <div class="card">
+                    <div class="card-hd">
+                        <span class="card-title">Sensor Array</span>
+                        <div class="live-badge"><div class="live-dot"></div><span>Live</span></div>
+                    </div>
+                    <div class="sensor-body">
+                        <div class="radar-ring">
+                            <canvas id="radar-canvas" class="radar-canvas"></canvas>
+                        </div>
+                        <div class="sensor-stats">
+                            <div class="sensor-stat">
+                                <span class="sensor-stat-val" id="radar-ap-count">0</span>
+                                <span class="sensor-stat-label">Endpoints</span>
+                            </div>
+                            <div class="sensor-stat">
+                                <span class="sensor-stat-val red" id="radar-threat-count">0</span>
+                                <span class="sensor-stat-label">Threats</span>
+                            </div>
+                            <div class="sensor-stat">
+                                <span class="sensor-stat-val blue" id="telemetry-pkts">0</span>
+                                <span class="sensor-stat-label">Pkts/s</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-hd">
+                        <span class="card-title">Network Telemetry</span>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="telemetry-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tables -->
+            <div class="table-section">
+
+                <!-- Active Threats -->
+                <div class="table-card threat-card">
+                    <div class="table-hd threat-hd-bg">
+                        <div class="hd-left">
+                            <span class="threat-dot" id="threat-indicator-dot"></span>
+                            <span class="table-title">Active Threats</span>
+                            <span class="count-chip" id="threat-count-badge">0</span>
+                        </div>
+                        <span class="table-hint">Click a row to inspect &amp; take action</span>
+                    </div>
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Network (SSID)</th>
+                                    <th>BSSID</th>
+                                    <th class="c">Ch</th>
+                                    <th class="c">Signal</th>
+                                    <th class="r">Score</th>
+                                </tr>
+                            </thead>
+                            <tbody id="threats-tbody"></tbody>
+                        </table>
+                        <div class="empty-state" id="threats-empty">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <p>No active threats detected</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legitimate Environment -->
+                <div class="table-card legit-card">
+                    <div class="table-hd">
+                        <div class="hd-left">
+                            <span class="table-title">Legitimate Environment</span>
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Network (SSID)</th>
+                                    <th>BSSID</th>
+                                    <th>Vendor</th>
+                                    <th class="c">Ch</th>
+                                    <th class="c">Signal</th>
+                                    <th class="c">Encryption</th>
+                                    <th class="r">Score</th>
+                                </tr>
+                            </thead>
+                            <tbody id="network-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="alert-container" class="toast-stack"></div>
+
+<script src="/static/js/charts.js"></script>
+<script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  aeroguard-ids:
+    build: .
+    container_name: aeroguard-ids
+    restart: unless-stopped
+    network_mode: "host"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./data:/app/data
+      - /dev/net/tun:/dev/net/tun
+    privileged: true
+    environment:
+      - TZ=UTC
