@@ -12,8 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchSettings();
     fetchWIPSStatus();
     pollHealth();
+    pollBaseline();
     setInterval(pollHealth, 5000);
     setInterval(fetchWIPSStatus, 5000);
+    setInterval(pollBaseline, 5000);
     initWebSocket();
     
     // We are now connected to a real Linux backend, so no mock data is needed.
@@ -253,7 +255,46 @@ async function pollHealth() {
         const snifferEl = document.getElementById('stat-sniffer');
         snifferEl.innerText = data.sniffer_active ? 'Active' : 'Idle';
         snifferEl.className = data.sniffer_active ? 'text-primary font-medium' : 'text-amber-500 font-medium';
+        snifferEl.className = data.sniffer_active ? 'text-primary font-medium' : 'text-amber-500 font-medium';
     } catch(e) {}
+}
+
+async function pollBaseline() {
+    try {
+        const res = await fetch('/api/baseline');
+        const data = await res.json();
+        let changed = false;
+        
+        for (const [ssid, profile] of Object.entries(data)) {
+            for (const [bssid, fingerprint] of Object.entries(profile.bssids)) {
+                if (!discoveredAPs.has(bssid)) {
+                    changed = true;
+                    discoveredAPs.set(bssid, {
+                        ssid: ssid,
+                        bssid: bssid,
+                        vendor: fingerprint.oui_vendor,
+                        channel: fingerprint.channels[0] || 0,
+                        rssi: fingerprint.rssi_stats.avg_rssi ? Math.round(fingerprint.rssi_stats.avg_rssi) : -100,
+                        security: fingerprint.cipher_suites.length ? fingerprint.cipher_suites[0] : 'WPA2',
+                        score: 0
+                    });
+                } else {
+                    // Update RSSI
+                    const existing = discoveredAPs.get(bssid);
+                    if (fingerprint.rssi_stats.avg_rssi && Math.round(fingerprint.rssi_stats.avg_rssi) !== existing.rssi) {
+                        existing.rssi = Math.round(fingerprint.rssi_stats.avg_rssi);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        
+        if (changed) {
+            renderTable();
+        }
+    } catch(e) {
+        console.error('Failed to fetch baseline', e);
+    }
 }
 
 async function fetchSettings() {
