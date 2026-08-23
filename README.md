@@ -32,8 +32,8 @@ We have created an automated installation script to make deploying AeroGuard inc
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/aeroguard-wids.git
-cd aeroguard-wids
+git clone https://github.com/thefayid/AeroGuard-WIDS.git
+cd AeroGuard-WIDS
 ```
 
 ### 2. Run the Installer
