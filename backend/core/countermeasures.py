@@ -138,7 +138,7 @@ class CountermeasuresEngine:
         self.signal_margin = 5.0     # dB above legit RSSI considered anomalous
 
         # -- runtime state ---------------------------------------------------
-        self.enabled = True
+        self.enabled = False
         self.demo_mode = sys.platform.startswith("win")
         self._iface: Optional[str] = None
         self._lock = threading.RLock()
