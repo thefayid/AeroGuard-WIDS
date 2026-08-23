@@ -7,9 +7,9 @@ from backend.utils.logger import get_logger
 from backend.utils.models import SSIDProfile, BSSIDFingerprint, RSSIBaseline
 
 try:
-    from scapy.all import Dot11Beacon, Dot11ProbeResp, Dot11, Dot11Elt
+    from scapy.all import Dot11Beacon, Dot11ProbeResp, Dot11, Dot11Elt, RadioTap
 except ImportError:
-    Dot11Beacon = Dot11ProbeResp = Dot11 = Dot11Elt = None
+    Dot11Beacon = Dot11ProbeResp = Dot11 = Dot11Elt = RadioTap = None
 
 logger = get_logger(__name__)
 
@@ -78,8 +78,13 @@ class ProfilerEngine:
                     return
 
                 rssi = -100
-                if hasattr(packet, 'dBm_AntSignal'):
-                    rssi = int(packet.dBm_AntSignal)
+                if packet.haslayer(RadioTap):
+                    try:
+                        dbm = packet[RadioTap].dBm_AntSignal
+                        if dbm is not None:
+                            rssi = int(dbm)
+                    except:
+                        pass
 
                 channel = 0
                 elt = packet.getlayer(Dot11Elt)
