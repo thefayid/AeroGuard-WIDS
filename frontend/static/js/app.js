@@ -407,8 +407,22 @@ function setupEventListeners() {
             btn.disabled = false;
         }
     });
+
+    document.getElementById('interface-select').addEventListener('change', async (e) => {
+        const iface = e.target.value;
+        if (iface) {
+            document.getElementById('active-iface').textContent = iface;
+            await fetch(`/api/interfaces/${iface}/select`, {method: 'POST'});
+        }
+    });
     
     document.getElementById('btn-baseline').addEventListener('click', async () => {
+        const iface = document.getElementById('interface-select').value;
+        if (!iface) { showToast('No Interface Selected', 'Select an interface first.', 'orange'); return; }
+        
+        // Ensure the sniffer is started on the selected interface before scanning
+        await fetch(`/api/interfaces/${iface}/select`, {method: 'POST'});
+
         const res = await fetch('/api/baseline/start', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},

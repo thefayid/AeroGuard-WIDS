@@ -48,6 +48,13 @@ async def start_monitor(name: str):
     sniffer_instance.start()
     return {"status": "success", "interface": new_name, "mode": "monitor"}
 
+@router.post("/interfaces/{name}/select")
+async def select_interface(name: str):
+    sniffer_instance.interface = name
+    if not sniffer_instance.is_active():
+        sniffer_instance.start()
+    return {"status": "success", "interface": name}
+
 @router.post("/interfaces/{name}/managed")
 async def start_managed(name: str):
     success = disable_monitor_mode(name)
