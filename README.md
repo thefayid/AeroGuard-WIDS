@@ -1,5 +1,6 @@
 # AeroGuard WIDS 🛡️ (Flagship Edition)
 
+## 🛑 The Ultimate Defense Against Evil Twin & Deauthentication Attacks
 AeroGuard is a state-of-the-art, enterprise-grade Wireless Intrusion Detection System (WIDS) and Wireless Intrusion Prevention System (WIPS). It is designed to passively monitor 802.11 wireless networks, detect advanced threats (like Evil Twins and Deauthentication Storms) using a combination of heuristic and machine-learning anomaly detection, and actively defend the network through targeted countermeasures.
 
 Featuring a beautiful, modern, macOS-inspired UI, AeroGuard brings professional-grade wireless security out of the terminal and into a stunning dashboard.
