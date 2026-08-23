@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(fetchWIPSStatus, 5000);
     initWebSocket();
     
-    // Start generating mock data for demonstration
-    startMockDataGenerator();
+    // We are now connected to a real Linux backend, so no mock data is needed.
+    // startMockDataGenerator();
 
     initTheme();
 });
