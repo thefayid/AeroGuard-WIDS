@@ -4,6 +4,8 @@ AeroGuard is a state-of-the-art, enterprise-grade Wireless Intrusion Detection S
 
 Featuring a beautiful, modern, macOS-inspired UI, AeroGuard brings professional-grade wireless security out of the terminal and into a stunning dashboard.
 
+![AeroGuard Dashboard](assets/dashboard.png)
+
 > [!WARNING]
 > **Linux & Hardware Requirement**
 > AeroGuard is designed to be run on **Linux** (e.g., Kali Linux, Ubuntu, Debian). 
