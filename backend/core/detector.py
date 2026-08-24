@@ -24,6 +24,7 @@ class DetectorEngine:
         # Threat Tracking
         self.rogue_bssids = {} # {bssid: score}
         self.compromised_clients = {} # {bssid: set(mac)}
+        self.live_aps = {} # {bssid: {"ssid": str, "rssi": int, "channel": int, "vendor": str, "security": str, "last_seen": float, "is_rogue": bool}}
         
         # Dynamic Settings
         self.deauth_threshold = 10
@@ -123,6 +124,23 @@ class DetectorEngine:
                 encryption_capabilities = ["Open"]
 
             oui = bssid[:8].upper()
+            
+            # Clean up old live APs (older than 15s)
+            now_ts = time.time()
+            stale_bssids = [b for b, data in self.live_aps.items() if now_ts - data['last_seen'] > 15]
+            for b in stale_bssids:
+                del self.live_aps[b]
+
+            # Update live state
+            self.live_aps[bssid] = {
+                "ssid": ssid,
+                "rssi": rssi,
+                "channel": channel,
+                "vendor": oui,
+                "security": encryption_capabilities[0],
+                "last_seen": now_ts,
+                "is_rogue": False # Will be updated if detected as rogue below
+            }
 
             baseline = profiler_instance.baseline
             if ssid in baseline:
@@ -228,6 +246,8 @@ class DetectorEngine:
                 # Keep track of known rogues
                 if score >= 40:
                     self.rogue_bssids[bssid] = score
+                    self.live_aps[bssid]['is_rogue'] = True
+                    self.live_aps[bssid]['score'] = score
                 elif bssid in self.rogue_bssids:
                     del self.rogue_bssids[bssid]
 

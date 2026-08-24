@@ -12,10 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchSettings();
     fetchWIPSStatus();
     pollHealth();
-    pollBaseline();
+    pollLiveNetworks();
     setInterval(pollHealth, 5000);
     setInterval(fetchWIPSStatus, 5000);
-    setInterval(pollBaseline, 5000);
+    setInterval(pollLiveNetworks, 5000);
     initWebSocket();
     
     // We are now connected to a real Linux backend, so no mock data is needed.
@@ -259,32 +259,39 @@ async function pollHealth() {
     } catch(e) {}
 }
 
-async function pollBaseline() {
+async function pollLiveNetworks() {
     try {
-        const res = await fetch('/api/baseline');
-        const data = await res.json();
+        const res = await fetch('/api/live');
+        const liveData = await res.json();
         let changed = false;
         
-        for (const [ssid, profile] of Object.entries(data)) {
-            for (const [bssid, fingerprint] of Object.entries(profile.bssids)) {
-                if (!discoveredAPs.has(bssid)) {
+        // Remove APs that are no longer in liveData
+        for (const [bssid, data] of discoveredAPs.entries()) {
+            if (!liveData[bssid]) {
+                discoveredAPs.delete(bssid);
+                changed = true;
+            }
+        }
+        
+        // Add or update live APs
+        for (const [bssid, data] of Object.entries(liveData)) {
+            if (!discoveredAPs.has(bssid)) {
+                changed = true;
+                discoveredAPs.set(bssid, {
+                    ssid: data.ssid,
+                    bssid: bssid,
+                    vendor: data.vendor,
+                    channel: data.channel,
+                    rssi: data.rssi,
+                    security: data.security,
+                    score: data.score || 0
+                });
+            } else {
+                const existing = discoveredAPs.get(bssid);
+                if (existing.rssi !== data.rssi || existing.score !== (data.score || 0)) {
+                    existing.rssi = data.rssi;
+                    existing.score = data.score || 0;
                     changed = true;
-                    discoveredAPs.set(bssid, {
-                        ssid: ssid,
-                        bssid: bssid,
-                        vendor: fingerprint.oui_vendor,
-                        channel: fingerprint.channels[0] || 0,
-                        rssi: fingerprint.rssi_stats.avg_rssi ? Math.round(fingerprint.rssi_stats.avg_rssi) : -100,
-                        security: fingerprint.cipher_suites.length ? fingerprint.cipher_suites[0] : 'WPA2',
-                        score: 0
-                    });
-                } else {
-                    // Update RSSI
-                    const existing = discoveredAPs.get(bssid);
-                    if (fingerprint.rssi_stats.avg_rssi && Math.round(fingerprint.rssi_stats.avg_rssi) !== existing.rssi) {
-                        existing.rssi = Math.round(fingerprint.rssi_stats.avg_rssi);
-                        changed = true;
-                    }
                 }
             }
         }
@@ -293,7 +300,7 @@ async function pollBaseline() {
             renderTable();
         }
     } catch(e) {
-        console.error('Failed to fetch baseline', e);
+        console.error('Failed to fetch live networks', e);
     }
 }
 

@@ -89,6 +89,10 @@ async def save_baseline():
 async def get_baseline():
     return {ssid: profile.model_dump() for ssid, profile in profiler_instance.baseline.items()}
 
+@router.get("/live")
+async def get_live_networks():
+    return detector_instance.live_aps
+
 @router.get("/settings", response_model=SettingsModel)
 async def get_settings():
     return SettingsModel(
