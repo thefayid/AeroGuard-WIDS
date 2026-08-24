@@ -827,3 +827,10 @@ function startMockDataGenerator() {
         renderTable();
     }, 2000);
 }
+
+// UI Utilities
+function toggleFullscreen(cardId) {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    card.classList.toggle('fullscreen');
+}
