@@ -21,6 +21,7 @@ class DetectorEngine:
         self.recent_deauth_floods = {} # {mac: timestamp}
         self.packet_buffer = deque(maxlen=20000) # Rolling 60s approx
         self.pcap_buffers = {} # {bssid: [packets]}
+        self.eapol_tracking = {} # {bssid: deque of timestamps}
         
         # Threat Tracking
         self.rogue_bssids = {} # {bssid: score}
@@ -145,6 +146,35 @@ class DetectorEngine:
                         logger.debug(f"Captured EAPOL frame for {target_bssid}")
                     except Exception as e:
                         logger.error(f"Failed to write handshake to pcap: {e}")
+
+                # EAPOL tracking for brute-force/PMKID attack detection
+                bssid = None
+                if addr3: bssid = addr3.lower()
+                elif addr1 and addr1.lower() != "ff:ff:ff:ff:ff:ff": bssid = addr1.lower()
+                elif addr2: bssid = addr2.lower()
+                
+                if bssid:
+                    now = time.time()
+                    if bssid not in self.eapol_tracking:
+                        self.eapol_tracking[bssid] = deque(maxlen=20)
+                    self.eapol_tracking[bssid].append(now)
+                    
+                    # Check for >10 EAPOL frames in the last 15 seconds
+                    recent_eapol = [t for t in self.eapol_tracking[bssid] if now - t <= 15]
+                    if len(recent_eapol) >= 10:
+                        ssid = self.live_aps.get(bssid, {}).get("ssid", "Unknown")
+                        self._trigger_alert(
+                            "WPA2/WPA3 Handshake Harvesting (PMKID Attack)",
+                            f"Brute-force attack detected against {bssid}. {len(recent_eapol)} EAPOL frames intercepted in 15s.",
+                            {
+                                "ssid": ssid,
+                                "bssid": bssid,
+                                "score": 100,
+                                "factors": ["W9: EAPOL Flood / PMKID Attack"],
+                                "severity": "CRITICAL"
+                            }
+                        )
+                        self.eapol_tracking[bssid].clear()
 
         if not packet.haslayer(Dot11Beacon):
             return

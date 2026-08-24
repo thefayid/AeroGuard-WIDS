@@ -147,9 +147,10 @@
         <div class="sidebar-scroll">
 
             <div class="sgroup" style="padding-bottom: 0;">
-                <div class="btn-row">
-                    <button id="btn-view-dashboard" class="btn btn-default btn-sm active-view" style="flex:1">Dashboard</button>
-                    <button id="btn-view-forensics" class="btn btn-default btn-sm" style="flex:1">Forensics</button>
+                <div class="btn-row" style="flex-wrap: wrap; gap: 4px;">
+                    <button id="btn-view-dashboard" class="btn btn-default btn-sm active-view" style="flex:1; min-width: 45%;">Dashboard</button>
+                    <button id="btn-view-forensics" class="btn btn-default btn-sm" style="flex:1; min-width: 45%;">Forensics</button>
+                    <button id="btn-view-radar" class="btn btn-default btn-sm" style="flex:1; min-width: 45%;">Radar</button>
                 </div>
             </div>
 
@@ -460,6 +461,23 @@
                 </div>
             </div>
         </div> <!-- End view-forensics -->
+
+        <div class="main-body hidden" id="view-radar" style="display: flex; justify-content: center; align-items: center; height: 100%;">
+            <div class="radar-container" style="position: relative; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(10,25,47,1) 0%, rgba(2,12,27,1) 100%); border: 2px solid var(--accent); overflow: hidden; box-shadow: 0 0 20px rgba(100, 255, 218, 0.2);">
+                <div class="radar-grid" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; border: 1px solid rgba(100,255,218,0.2);"></div>
+                <div class="radar-grid" style="position: absolute; top: 125px; left: 125px; right: 125px; bottom: 125px; border-radius: 50%; border: 1px solid rgba(100,255,218,0.2);"></div>
+                <div class="radar-grid" style="position: absolute; top: 250px; left: 250px; right: 250px; bottom: 250px; border-radius: 50%; border: 1px solid rgba(100,255,218,0.2);"></div>
+                <div class="radar-axis" style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(100,255,218,0.2);"></div>
+                <div class="radar-axis" style="position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: rgba(100,255,218,0.2);"></div>
+                <div class="radar-sweep" id="radar-sweep"></div>
+                
+                <!-- Radar dots will be injected here -->
+                <div id="radar-dots"></div>
+                
+                <!-- Center point (our device) -->
+                <div style="position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); transform: translate(-50%, -50%); box-shadow: 0 0 10px var(--accent);"></div>
+            </div>
+        </div> <!-- End view-radar -->
     </div>
 </div>
 

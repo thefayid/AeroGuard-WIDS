@@ -227,6 +227,9 @@ function renderTable() {
     if (dot) dot.className = 'threat-dot' + (threatCount > 0 ? ' active' : '');
     if (badge) { badge.textContent = threatCount; badge.className = 'count-chip' + (threatCount > 0 ? ' red' : ''); }
     if (emptyState) emptyState.style.display = threatCount === 0 ? 'flex' : 'none';
+    
+    // Also update radar UI
+    if (typeof updateRadar === 'function') updateRadar();
 }
 
 async function loadInterfaces() {
@@ -438,19 +441,24 @@ function setupEventListeners() {
         }
     });
 
-    document.getElementById('btn-view-dashboard').addEventListener('click', () => {
-        document.getElementById('view-dashboard').classList.remove('hidden');
-        document.getElementById('view-forensics').classList.add('hidden');
-        document.getElementById('btn-view-dashboard').classList.add('active-view');
-        document.getElementById('btn-view-forensics').classList.remove('active-view');
-    });
-
-    document.getElementById('btn-view-forensics').addEventListener('click', () => {
-        document.getElementById('view-dashboard').classList.add('hidden');
-        document.getElementById('view-forensics').classList.remove('hidden');
-        document.getElementById('btn-view-dashboard').classList.remove('active-view');
-        document.getElementById('btn-view-forensics').classList.add('active-view');
-        fetchForensics();
+    const views = ['dashboard', 'forensics', 'radar'];
+    
+    views.forEach(view => {
+        const btn = document.getElementById(`btn-view-${view}`);
+        if(btn) {
+            btn.addEventListener('click', () => {
+                views.forEach(v => {
+                    document.getElementById(`view-${v}`).classList.add('hidden');
+                    document.getElementById(`btn-view-${v}`).classList.remove('active-view');
+                });
+                
+                document.getElementById(`view-${view}`).classList.remove('hidden');
+                btn.classList.add('active-view');
+                
+                if (view === 'forensics') fetchForensics();
+                if (view === 'radar') updateRadar();
+            });
+        }
     });
 
     ['slide-deauth', 'slide-rssi', 'slide-cutoff'].forEach(id => {
@@ -912,4 +920,64 @@ async function fetchForensics() {
     } catch(e) {
         console.error('Failed to fetch forensics', e);
     }
+}
+
+// Radar Logic
+function calculateDistance(rssi, freqMHz = 2412) {
+    // FSPL formula: Distance = 10 ^ ((27.55 - (20 * log10(freq)) + |rssi|) / 20)
+    const exp = (27.55 - (20 * Math.log10(freqMHz)) + Math.abs(rssi)) / 20.0;
+    return Math.pow(10, exp);
+}
+
+function updateRadar() {
+    const container = document.getElementById('radar-dots');
+    if (!container) return;
+    
+    // Check if radar view is active
+    if (document.getElementById('view-radar').classList.contains('hidden')) return;
+    
+    container.innerHTML = '';
+    
+    // Max radius of radar is 250px (500x500 container). Max distance ~100m.
+    const maxRadiusPx = 240; // padding
+    const maxDistM = 100;
+    
+    discoveredAPs.forEach(ap => {
+        const distM = calculateDistance(ap.rssi);
+        // Clamp distance
+        const clampedDist = Math.min(distM, maxDistM);
+        
+        // Calculate pixel radius
+        const rPx = (clampedDist / maxDistM) * maxRadiusPx;
+        
+        // Use BSSID to generate a stable random angle between 0 and 2PI
+        let hash = 0;
+        for(let i=0; i<ap.bssid.length; i++) hash = ap.bssid.charCodeAt(i) + ((hash << 5) - hash);
+        const angle = Math.abs(hash) % (Math.PI * 2);
+        
+        // Calculate x, y relative to center (250, 250)
+        const x = 250 + (rPx * Math.cos(angle));
+        const y = 250 + (rPx * Math.sin(angle));
+        
+        const dot = document.createElement('div');
+        dot.className = \`radar-dot \${ap.score >= 40 ? 'rogue' : 'legit'}\`;
+        dot.style.left = \`\${x}px\`;
+        dot.style.top = \`\${y}px\`;
+        
+        // Tooltip
+        const tooltip = document.createElement('div');
+        tooltip.className = 'radar-tooltip hidden';
+        tooltip.innerHTML = \`
+            <strong>\${ap.ssid}</strong><br>
+            <span style="color:var(--label-2)">\${ap.bssid}</span><br>
+            <span style="color:var(--label-2)">RSSI:</span> \${ap.rssi} dBm (~\${distM.toFixed(1)}m)<br>
+            <span style="color:var(--label-2)">Score:</span> <span class="\${ap.score >= 40 ? 'red' : 'green'}">\${ap.score}/100</span>
+        \`;
+        
+        dot.addEventListener('mouseenter', () => tooltip.classList.remove('hidden'));
+        dot.addEventListener('mouseleave', () => tooltip.classList.add('hidden'));
+        
+        dot.appendChild(tooltip);
+        container.appendChild(dot);
+    });
 }
