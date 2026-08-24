@@ -960,19 +960,19 @@ function updateRadar() {
         const y = 250 + (rPx * Math.sin(angle));
         
         const dot = document.createElement('div');
-        dot.className = \`radar-dot \${ap.score >= 40 ? 'rogue' : 'legit'}\`;
-        dot.style.left = \`\${x}px\`;
-        dot.style.top = \`\${y}px\`;
+        dot.className = `radar-dot ${ap.score >= 40 ? 'rogue' : 'legit'}`;
+        dot.style.left = `${x}px`;
+        dot.style.top = `${y}px`;
         
         // Tooltip
         const tooltip = document.createElement('div');
         tooltip.className = 'radar-tooltip hidden';
-        tooltip.innerHTML = \`
-            <strong>\${ap.ssid}</strong><br>
-            <span style="color:var(--label-2)">\${ap.bssid}</span><br>
-            <span style="color:var(--label-2)">RSSI:</span> \${ap.rssi} dBm (~\${distM.toFixed(1)}m)<br>
-            <span style="color:var(--label-2)">Score:</span> <span class="\${ap.score >= 40 ? 'red' : 'green'}">\${ap.score}/100</span>
-        \`;
+        tooltip.innerHTML = `
+            <strong>${ap.ssid}</strong><br>
+            <span style="color:var(--label-2)">${ap.bssid}</span><br>
+            <span style="color:var(--label-2)">RSSI:</span> ${ap.rssi} dBm (~${distM.toFixed(1)}m)<br>
+            <span style="color:var(--label-2)">Score:</span> <span class="${ap.score >= 40 ? 'red' : 'green'}">${ap.score}/100</span>
+        `;
         
         dot.addEventListener('mouseenter', () => tooltip.classList.remove('hidden'));
         dot.addEventListener('mouseleave', () => tooltip.classList.add('hidden'));
