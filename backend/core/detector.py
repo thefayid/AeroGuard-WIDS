@@ -6,9 +6,9 @@ from backend.core.profiler import profiler_instance
 from backend.core.countermeasures import countermeasures_instance
 
 try:
-    from scapy.all import Dot11Beacon, Dot11, Dot11Elt, RadioTap, Dot11Deauth, Dot11Disas, wrpcap
+    from scapy.all import Dot11Beacon, Dot11, Dot11Elt, RadioTap, Dot11Deauth, Dot11Disas, wrpcap, EAPOL
 except ImportError:
-    Dot11Beacon = Dot11 = Dot11Elt = RadioTap = Dot11Deauth = Dot11Disas = wrpcap = None
+    Dot11Beacon = Dot11 = Dot11Elt = RadioTap = Dot11Deauth = Dot11Disas = wrpcap = EAPOL = None
 
 logger = get_logger(__name__)
 
@@ -122,6 +122,28 @@ class DetectorEngine:
                             self.compromised_clients[bssid].add(addr2.lower())
                             if addr2.lower() in self.live_clients:
                                 self.live_clients[addr2.lower()]["bssid"] = bssid
+
+            # Handshake Capture (EAPOL)
+            if packet.haslayer(EAPOL) and (addr1 or addr2):
+                # We only want to capture handshakes related to rogue APs
+                target_bssid = None
+                if addr1 and addr1.lower() in self.rogue_bssids:
+                    target_bssid = addr1.lower()
+                elif addr2 and addr2.lower() in self.rogue_bssids:
+                    target_bssid = addr2.lower()
+                elif addr3 and addr3.lower() in self.rogue_bssids:
+                    target_bssid = addr3.lower()
+                
+                if target_bssid and wrpcap:
+                    import os
+                    capture_dir = os.path.join("data", "captures")
+                    os.makedirs(capture_dir, exist_ok=True)
+                    pcap_file = os.path.join(capture_dir, f"{target_bssid.replace(':', '')}_handshake.pcap")
+                    try:
+                        wrpcap(pcap_file, packet, append=True)
+                        logger.debug(f"Captured EAPOL frame for {target_bssid}")
+                    except Exception as e:
+                        logger.error(f"Failed to write handshake to pcap: {e}")
 
         if not packet.haslayer(Dot11Beacon):
             return
