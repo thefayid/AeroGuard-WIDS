@@ -14,6 +14,7 @@ if [ ! -d "venv" ]; then
 fi
 
 echo -e "\e[32m[*] Starting AeroGuard WIDS Backend...\e[0m"
+echo -e "\e[36m                 ~ Created by Fayid ~\e[0m"
 echo -e "\e[36m    Dashboard will be available at: http://localhost:8000\e[0m"
 echo ""
 

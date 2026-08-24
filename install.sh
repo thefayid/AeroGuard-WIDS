@@ -14,6 +14,7 @@ echo "  / /| | / _ \/ ___/ __ \ / / __/ / / / __ \`/ ___/ __  / "
 echo " / ___ |/  __/ /  / /_/ // /_/ / /_/ / /_/ / /  / /_/ /  "
 echo "/_/  |_|\___/_/   \____/ \____/\__,_/\__,_/_/   \__,_/   "
 echo "                                                         "
+echo -e "\e[36m                 ~ Created by Fayid ~\e[0m"
 echo -e "\e[0m"
 echo -e "\e[32m[*] Starting AeroGuard Automated Installer...\e[0m"
 
