@@ -923,10 +923,13 @@ async function fetchForensics() {
 }
 
 // Radar Logic
-function calculateDistance(rssi, freqMHz = 2412) {
-    // FSPL formula: Distance = 10 ^ ((27.55 - (20 * log10(freq)) + |rssi|) / 20)
-    const exp = (27.55 - (20 * Math.log10(freqMHz)) + Math.abs(rssi)) / 20.0;
-    return Math.pow(10, exp);
+function calculateDistance(rssi) {
+    // A purely physical FSPL formula clusters 90% of APs within 20 pixels of the center.
+    // For better UX, we'll map RSSI linearly to a "visual distance" where -30dBm is close (0m) and -90dBm is far (100m).
+    let clampedRssi = Math.min(-30, Math.max(-100, rssi));
+    // -30 -> 0%, -100 -> 100%
+    let percentage = (Math.abs(clampedRssi) - 30) / 70.0;
+    return percentage * 100; // Returns 0 to 100 "meters" visually
 }
 
 function updateRadar() {
