@@ -146,6 +146,13 @@
 
         <div class="sidebar-scroll">
 
+            <div class="sgroup" style="padding-bottom: 0;">
+                <div class="btn-row">
+                    <button id="btn-view-dashboard" class="btn btn-default btn-sm active-view" style="flex:1">Dashboard</button>
+                    <button id="btn-view-forensics" class="btn btn-default btn-sm" style="flex:1">Forensics</button>
+                </div>
+            </div>
+
             <div class="sgroup">
                 <p class="sgroup-title">System Health</p>
                 <div class="srow"><span class="srow-label">CPU</span><span class="srow-val" id="stat-cpu">—</span></div>
@@ -258,7 +265,7 @@
             </div>
         </header>
 
-        <div class="main-body">
+        <div class="main-body" id="view-dashboard">
 
             <!-- KPI Row -->
             <div class="kpi-row">
@@ -427,7 +434,32 @@
                 </div>
 
             </div>
-        </div>
+            </div>
+        </div> <!-- End view-dashboard -->
+
+        <div class="main-body hidden" id="view-forensics">
+            <div class="table-card legit-card" style="margin-top: 0;">
+                <div class="table-hd">
+                    <div class="hd-left">
+                        <span class="table-title">Forensics & Incident Logs</span>
+                    </div>
+                </div>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Incident Timestamp</th>
+                                <th>Threat Classification</th>
+                                <th>Target / Description</th>
+                                <th>Target BSSID</th>
+                                <th class="r">Max Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="forensics-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div> <!-- End view-forensics -->
     </div>
 </div>
 

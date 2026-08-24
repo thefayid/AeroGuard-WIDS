@@ -438,6 +438,21 @@ function setupEventListeners() {
         }
     });
 
+    document.getElementById('btn-view-dashboard').addEventListener('click', () => {
+        document.getElementById('view-dashboard').classList.remove('hidden');
+        document.getElementById('view-forensics').classList.add('hidden');
+        document.getElementById('btn-view-dashboard').classList.add('active-view');
+        document.getElementById('btn-view-forensics').classList.remove('active-view');
+    });
+
+    document.getElementById('btn-view-forensics').addEventListener('click', () => {
+        document.getElementById('view-dashboard').classList.add('hidden');
+        document.getElementById('view-forensics').classList.remove('hidden');
+        document.getElementById('btn-view-dashboard').classList.remove('active-view');
+        document.getElementById('btn-view-forensics').classList.add('active-view');
+        fetchForensics();
+    });
+
     ['slide-deauth', 'slide-rssi', 'slide-cutoff'].forEach(id => {
         const el = document.getElementById(id);
         el.addEventListener('input', (e) => {
@@ -871,4 +886,30 @@ function toggleFullscreen(cardId) {
     const card = document.getElementById(cardId);
     if (!card) return;
     card.classList.toggle('fullscreen');
+}
+
+async function fetchForensics() {
+    try {
+        const res = await fetch('/api/forensics/logs');
+        const data = await res.json();
+        if (data.status === 'success') {
+            const tbody = document.getElementById('forensics-tbody');
+            tbody.innerHTML = '';
+            data.logs.forEach(log => {
+                const tr = document.createElement('tr');
+                const date = new Date(log.timestamp * 1000).toLocaleString();
+                let scoreClass = log.score >= 70 ? 'red' : 'orange';
+                tr.innerHTML = `
+                    <td class="mono" style="font-size:12px">${date}</td>
+                    <td style="font-weight:600">${log.title}</td>
+                    <td style="font-size:12px; color:var(--label-2); max-width: 300px;">${log.description}</td>
+                    <td class="mono">${log.bssid}</td>
+                    <td class="r ${scoreClass}"><b>${log.score}</b>/100</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    } catch(e) {
+        console.error('Failed to fetch forensics', e);
+    }
 }

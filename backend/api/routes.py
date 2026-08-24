@@ -227,3 +227,30 @@ async def get_compromised_clients(bssid: str):
     bssid_lower = bssid.lower()
     clients = detector_instance.compromised_clients.get(bssid_lower, set())
     return {"status": "success", "bssid": bssid_lower, "clients": list(clients)}
+
+# ---------------------------------------------------------------------------
+# Forensics & Reporting
+# ---------------------------------------------------------------------------
+
+@router.get("/forensics/logs")
+async def get_forensics_logs():
+    """Retrieve historical threat incidents from the SQLite database."""
+    from backend.db.database import SessionLocal, DBIncidentLog
+    db = SessionLocal()
+    try:
+        logs = db.query(DBIncidentLog).order_by(DBIncidentLog.timestamp.desc()).limit(100).all()
+        result = []
+        for log in logs:
+            result.append({
+                "id": log.id,
+                "title": log.title,
+                "description": log.description,
+                "bssid": log.bssid,
+                "score": log.score,
+                "timestamp": log.timestamp.timestamp() if log.timestamp else 0
+            })
+        return {"status": "success", "logs": result}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+    finally:
+        db.close()

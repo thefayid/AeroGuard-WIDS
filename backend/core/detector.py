@@ -235,10 +235,15 @@ class DetectorEngine:
                 self.live_aps[bssid]['score'] = score
                 return
 
+            score = 0
+            factors = []
+
+            if oui in ["00:13:37", "00:C0:CA"] or "pineapple" in ssid.lower() or "pineap" in ssid.lower():
+                score += 50
+                factors.append("W8: Hak5 Pineapple Hardware Signature Detected")
+
             baseline = profiler_instance.baseline
             if ssid in baseline:
-                score = 0
-                factors = []
                 profile = baseline[ssid]
                 
                 # Check ML prediction
