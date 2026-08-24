@@ -166,14 +166,35 @@ class CountermeasuresEnableReq(BaseModel):
     enabled: bool
 
 
-@router.post("/countermeasures/enable")
-async def enable_countermeasures(req: CountermeasuresEnableReq):
-    """Enable (start attack loop) or disable the countermeasures."""
-    if req.enabled:
+@router.post("/countermeasures/toggle")
+async def toggle_wips(enabled: bool):
+    """Enable or disable Active Countermeasures (WIPS)."""
+    if enabled:
         countermeasures_instance.start()
     else:
         countermeasures_instance.stop()
-    return countermeasures_instance.status()
+    return {"status": "success", "wips_enabled": countermeasures_instance.enabled}
+
+@router.get("/clients")
+async def get_clients():
+    """Return live tracked clients."""
+    now = time.time()
+    clients = []
+    
+    # Prune stale clients (older than 60s)
+    stale_macs = [mac for mac, data in detector_instance.live_clients.items() if now - data['last_seen'] > 60]
+    for mac in stale_macs:
+        del detector_instance.live_clients[mac]
+        
+    for mac, data in detector_instance.live_clients.items():
+        clients.append({
+            "mac": mac,
+            "bssid": data["bssid"] or "Unassociated",
+            "rssi": data["rssi"],
+            "last_seen": data["last_seen"],
+            "probed_ssids": list(data["probed_ssids"])
+        })
+    return {"clients": clients}
 
 
 @router.post("/countermeasures/config")

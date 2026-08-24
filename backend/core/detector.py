@@ -25,6 +25,10 @@ class DetectorEngine:
         self.rogue_bssids = {} # {bssid: score}
         self.compromised_clients = {} # {bssid: set(mac)}
         self.live_aps = {} # {bssid: {"ssid": str, "rssi": int, "channel": int, "vendor": str, "security": str, "last_seen": float, "is_rogue": bool}}
+        self.live_clients = {} # {mac: {"bssid": str, "last_seen": float, "rssi": int, "probed_ssids": set()}}
+        import random
+        import string
+        self.karma_fake_ssid = "AeroGuard_Probe_" + ''.join(random.choices(string.ascii_letters + string.digits, k=6))
         
         # Dynamic Settings
         self.deauth_threshold = 10
@@ -70,7 +74,44 @@ class DetectorEngine:
             addr2 = dot11.addr2
             addr3 = dot11.addr3
             
-            # Check if this is a data frame (type 2) or management frame (type 0)
+            # Identify client MAC (usually addr2 in probes/data from client)
+            client_mac = None
+            if dot11.type == 0 and dot11.subtype == 4: # Probe Request
+                client_mac = addr2
+            elif dot11.type == 2: # Data
+                # From DS=0, To DS=1 -> client is addr2
+                if dot11.FCfield & 0x1 and not (dot11.FCfield & 0x2):
+                    client_mac = addr2
+                # From DS=1, To DS=0 -> client is addr1
+                elif not (dot11.FCfield & 0x1) and (dot11.FCfield & 0x2):
+                    client_mac = addr1
+
+            if client_mac and client_mac.lower() != "ff:ff:ff:ff:ff:ff":
+                client_mac = client_mac.lower()
+                rssi = -100
+                if packet.haslayer(RadioTap) and hasattr(packet[RadioTap], 'dBm_AntSignal'):
+                    rssi = int(packet[RadioTap].dBm_AntSignal)
+                
+                if client_mac not in self.live_clients:
+                    self.live_clients[client_mac] = {"bssid": None, "last_seen": 0, "rssi": -100, "probed_ssids": set()}
+                
+                self.live_clients[client_mac]["last_seen"] = time.time()
+                self.live_clients[client_mac]["rssi"] = rssi
+                
+                # Check for Probe Request SSIDs
+                if dot11.type == 0 and dot11.subtype == 4 and packet.haslayer(Dot11Elt):
+                    elt = packet.getlayer(Dot11Elt)
+                    while isinstance(elt, Dot11Elt):
+                        if elt.ID == 0 and elt.info: # SSID
+                            try:
+                                probed_ssid = elt.info.decode('utf-8', errors='ignore')
+                                if probed_ssid:
+                                    self.live_clients[client_mac]["probed_ssids"].add(probed_ssid)
+                            except:
+                                pass
+                        elt = elt.payload.getlayer(Dot11Elt)
+
+            # Compromised client tracking (rogue AP communication)
             if dot11.type in [0, 2]:
                 for bssid in self.rogue_bssids:
                     # If the rogue is the receiver (addr1) or BSSID (addr3)
@@ -79,6 +120,8 @@ class DetectorEngine:
                             if bssid not in self.compromised_clients:
                                 self.compromised_clients[bssid] = set()
                             self.compromised_clients[bssid].add(addr2.lower())
+                            if addr2.lower() in self.live_clients:
+                                self.live_clients[addr2.lower()]["bssid"] = bssid
 
         if not packet.haslayer(Dot11Beacon):
             return
@@ -152,6 +195,21 @@ class DetectorEngine:
             }
 
             if skip_threats:
+                return
+
+            if ssid == self.karma_fake_ssid:
+                score = 100
+                factors = ["W7: Karma/Pineapple Attack (Fake Probe Response)"]
+                countermeasures_instance.report_threat(
+                    ssid=ssid,
+                    bssid=bssid,
+                    score=score,
+                    factors=factors,
+                    extra={"rssi": rssi, "channel": channel}
+                )
+                self.rogue_bssids[bssid] = score
+                self.live_aps[bssid]['is_rogue'] = True
+                self.live_aps[bssid]['score'] = score
                 return
 
             baseline = profiler_instance.baseline

@@ -11,11 +11,14 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     fetchSettings();
     fetchWIPSStatus();
-    pollHealth();
-    pollLiveNetworks();
-    setInterval(pollHealth, 5000);
-    setInterval(fetchWIPSStatus, 5000);
+    pollHealth();    
+    // Core polling loops
+    setInterval(pollHealth, 2000);
     setInterval(pollLiveNetworks, 5000);
+    setInterval(pollLiveClients, 5000);
+    
+    // WIPS status loop
+    setInterval(fetchWIPSStatus, 5000);
     initWebSocket();
     
     // We are now connected to a real Linux backend, so no mock data is needed.
@@ -301,6 +304,41 @@ async function pollLiveNetworks() {
         }
     } catch(e) {
         console.error('Failed to fetch live networks', e);
+    }
+}
+
+async function pollLiveClients() {
+    try {
+        const res = await fetch('/api/clients');
+        const data = await res.json();
+        const tbody = document.getElementById('clients-tbody');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '';
+        if (data.clients.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="center dim" style="padding: 24px;">No stations detected</td></tr>';
+            return;
+        }
+        
+        // Sort by most recently seen
+        data.clients.sort((a, b) => b.last_seen - a.last_seen);
+        
+        data.clients.forEach(client => {
+            const row = document.createElement('tr');
+            const sigCls = client.rssi > -65 ? 'accent' : 'dim';
+            const timeAgo = Math.round((Date.now()/1000) - client.last_seen);
+            
+            row.innerHTML = `
+                <td class="mono">${client.mac}</td>
+                <td class="mono">${client.bssid}</td>
+                <td class="dim" style="font-size:11px;max-width:150px;overflow:hidden;text-overflow:ellipsis">${client.probed_ssids.length > 0 ? client.probed_ssids.join(', ') : '—'}</td>
+                <td class="center ${sigCls}" style="font-family:var(--font-mono);font-size:11px">${client.rssi !== -100 ? client.rssi + ' dBm' : '—'}</td>
+                <td class="center dim" style="font-size:11px">${timeAgo}s ago</td>
+            `;
+            tbody.appendChild(row);
+        });
+    } catch(e) {
+        console.error('Failed to fetch live clients', e);
     }
 }
 
