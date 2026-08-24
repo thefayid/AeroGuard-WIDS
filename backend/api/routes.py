@@ -91,6 +91,11 @@ async def get_baseline():
 
 @router.get("/live")
 async def get_live_networks():
+    import time
+    now_ts = time.time()
+    stale_bssids = [b for b, data in detector_instance.live_aps.items() if now_ts - data['last_seen'] > 15]
+    for b in stale_bssids:
+        del detector_instance.live_aps[b]
     return detector_instance.live_aps
 
 @router.get("/settings", response_model=SettingsModel)

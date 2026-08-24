@@ -44,7 +44,7 @@ class DetectorEngine:
         else:
             logger.warning("Windows host detected. ML anomaly detection disabled to prevent MemoryError.")
 
-    async def process_packet(self, packet):
+    async def process_packet(self, packet, skip_threats=False):
         if not Dot11:
             return
             
@@ -53,6 +53,11 @@ class DetectorEngine:
         now = time.time()
         while self.packet_buffer and self.packet_buffer[0][0] < now - 60:
             self.packet_buffer.popleft()
+
+        if skip_threats:
+            if packet.haslayer(Dot11Beacon) or packet.haslayer(Dot11ProbeResp):
+                await self._analyze_beacon(packet, skip_threats=True)
+            return
 
         if packet.haslayer(Dot11Deauth) or packet.haslayer(Dot11Disas):
             await self._handle_deauth(packet)
@@ -78,12 +83,15 @@ class DetectorEngine:
         if not packet.haslayer(Dot11Beacon):
             return
 
+        await self._analyze_beacon(packet, skip_threats=False)
+
+    async def _analyze_beacon(self, packet, skip_threats=False):
         try:
-            bssid = dot11.addr3
-            if not bssid: 
+            bssid = packet[Dot11].addr3
+            if not bssid:
                 return
             bssid = bssid.lower()
-            
+
             ssid = ""
             channel = 0
             encryption_capabilities = []
@@ -91,19 +99,20 @@ class DetectorEngine:
 
             elt = packet.getlayer(Dot11Elt)
             while elt:
-                if elt.ID == 0: 
-                    try: ssid = elt.info.decode('utf-8', 'ignore')
-                    except: pass
-                elif elt.ID == 3: 
-                    try: channel = int(elt.info[0])
-                    except: pass
-                elif elt.ID == 48:
+                if elt.ID == 0:
+                    try:
+                        ssid = elt.info.decode('utf-8', 'ignore')
+                    except:
+                        pass
+                elif elt.ID == 3:
+                    try:
+                        channel = int(elt.info[0])
+                    except:
+                        pass
+                elif elt.ID == 48: 
                     encryption_capabilities.append("WPA2")
-                    # Check for WPA3 SAE (AKM suite 00-0F-AC:8)
                     if b'\x00\x0f\xac\x08' in elt.info:
                         encryption_capabilities.append("WPA3")
-                    # Check for Management Frame Protection (MFP) capability/required
-                    # Simplified heuristic: Look for 00-0F-AC:6 (BIP-CMAC-128) for MFP
                     if b'\x00\x0f\xac\x06' in elt.info:
                         encryption_capabilities.append("MFP")
                 elif elt.ID == 221: 
@@ -141,6 +150,9 @@ class DetectorEngine:
                 "last_seen": now_ts,
                 "is_rogue": False # Will be updated if detected as rogue below
             }
+
+            if skip_threats:
+                return
 
             baseline = profiler_instance.baseline
             if ssid in baseline:

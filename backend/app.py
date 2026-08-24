@@ -25,6 +25,7 @@ async def process_packets():
                 packet = sniffer_instance.packet_queue.get_nowait()
                 if profiler_instance.is_active:
                     await profiler_instance.process_packet(packet)
+                    await detector_instance.process_packet(packet, skip_threats=True)
                 else:
                     await detector_instance.process_packet(packet)
                 # Also feed the WIPS countermeasure engine (client tracking).
