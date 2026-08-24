@@ -15,6 +15,7 @@ logger = get_logger(__name__)
 class DetectorEngine:
     def __init__(self):
         self.active_alerts = []
+        self.last_alert_time = {}
         self.deauth_window = deque()
         self.consecutive_seconds = 3
         self.recent_deauth_floods = {} # {mac: timestamp}
@@ -470,20 +471,21 @@ class DetectorEngine:
             self.deauth_window.clear()
 
     def _trigger_alert(self, title: str, description: str, metadata: Dict[str, Any]):
+        cache_key = f"{title}_{metadata.get('bssid')}"
+        
+        # Debounce alerts for the same BSSID to prevent UI spam
+        if cache_key in self.last_alert_time:
+            if time.time() - self.last_alert_time[cache_key] < 30:
+                return
+        
+        self.last_alert_time[cache_key] = time.time()
+        
         alert = {
             "title": title,
             "description": description,
             "metadata": metadata,
             "timestamp": time.time()
         }
-        
-        for existing in self.active_alerts:
-            if existing["title"] == title and existing["metadata"].get("bssid") == metadata.get("bssid"):
-                if time.time() - existing["timestamp"] < 10:
-                    return
-                else:
-                    existing["timestamp"] = time.time()
-                    return
 
         logger.warning(f"THREAT DETECTED: {title} - {description}")
         self.active_alerts.append(alert)
