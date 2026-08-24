@@ -972,9 +972,9 @@ function updateRadar() {
         tooltip.className = 'radar-tooltip hidden';
         tooltip.innerHTML = `
             <strong>${ap.ssid}</strong><br>
-            <span style="color:var(--label-2)">${ap.bssid}</span><br>
-            <span style="color:var(--label-2)">RSSI:</span> ${ap.rssi} dBm (~${distM.toFixed(1)}m)<br>
-            <span style="color:var(--label-2)">Score:</span> <span class="${ap.score >= 40 ? 'red' : 'green'}">${ap.score}/100</span>
+            <span style="color:var(--t2)">${ap.bssid}</span><br>
+            <span style="color:var(--t2)">RSSI:</span> ${ap.rssi} dBm (~${distM.toFixed(1)}m)<br>
+            <span style="color:var(--t2)">Score:</span> <span style="color:var(--${ap.score >= 40 ? 'red' : 'green'}); font-weight:600">${ap.score}/100</span>
         `;
         
         dot.addEventListener('mouseenter', () => tooltip.classList.remove('hidden'));

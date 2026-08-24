@@ -638,8 +638,8 @@ tbody td.blue { color: var(--blue); font-family: var(--font-mono); font-size: 11
 
 .radar-tooltip {
     position: absolute;
-    background: rgba(10, 25, 47, 0.9);
-    border: 1px solid var(--border-dk);
+    background: var(--surface);
+    border: 1px solid var(--border);
     padding: 8px 12px;
     border-radius: 4px;
     font-size: 12px;
@@ -648,5 +648,5 @@ tbody td.blue { color: var(--blue); font-family: var(--font-mono); font-size: 11
     z-index: 10;
     transform: translate(-50%, -120%);
     white-space: nowrap;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    box-shadow: var(--shadow-md);
 }
