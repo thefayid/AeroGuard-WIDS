@@ -166,14 +166,14 @@ class CountermeasuresEnableReq(BaseModel):
     enabled: bool
 
 
-@router.post("/countermeasures/toggle")
-async def toggle_wips(enabled: bool):
-    """Enable or disable Active Countermeasures (WIPS)."""
-    if enabled:
+@router.post("/countermeasures/enable")
+async def enable_countermeasures(req: CountermeasuresEnableReq):
+    """Enable (start attack loop) or disable the countermeasures."""
+    if req.enabled:
         countermeasures_instance.start()
     else:
         countermeasures_instance.stop()
-    return {"status": "success", "wips_enabled": countermeasures_instance.enabled}
+    return countermeasures_instance.status()
 
 @router.get("/clients")
 async def get_clients():
