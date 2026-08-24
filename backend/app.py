@@ -76,14 +76,13 @@ async def karma_loop():
             await asyncio.sleep(30)
             if sniffer_instance.interface and sniffer_instance.is_active():
                 # Inject a fake probe request natively if possible
-                if Dot11 is not None and getattr(sniffer_instance, 'interface', None):
-                    try:
-                        from scapy.all import RadioTap, Dot11, Dot11ProbeReq, Dot11Elt, sendp
-                        fake_ssid = detector_instance.karma_fake_ssid
-                        probe = RadioTap() / Dot11(type=0, subtype=4, addr1="ff:ff:ff:ff:ff:ff", addr2="00:11:22:33:44:55", addr3="ff:ff:ff:ff:ff:ff") / Dot11ProbeReq() / Dot11Elt(ID="SSID", info=fake_ssid.encode())
-                        sendp(probe, iface=sniffer_instance.interface, verbose=0)
-                    except Exception as e:
-                        pass # May fail on Windows or if interface is managed
+                try:
+                    from scapy.all import RadioTap, Dot11, Dot11ProbeReq, Dot11Elt, sendp
+                    fake_ssid = detector_instance.karma_fake_ssid
+                    probe = RadioTap() / Dot11(type=0, subtype=4, addr1="ff:ff:ff:ff:ff:ff", addr2="00:11:22:33:44:55", addr3="ff:ff:ff:ff:ff:ff") / Dot11ProbeReq() / Dot11Elt(ID="SSID", info=fake_ssid.encode())
+                    sendp(probe, iface=sniffer_instance.interface, verbose=0)
+                except Exception as e:
+                    pass # May fail on Windows or if interface is managed
         except asyncio.CancelledError:
             break
         except Exception as e:

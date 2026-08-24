@@ -6,9 +6,9 @@ from backend.core.profiler import profiler_instance
 from backend.core.countermeasures import countermeasures_instance
 
 try:
-    from scapy.all import Dot11Beacon, Dot11, Dot11Elt, RadioTap, Dot11Deauth, Dot11Disas, wrpcap, EAPOL
+    from scapy.all import Dot11Beacon, Dot11, Dot11Elt, RadioTap, Dot11Deauth, Dot11Disas, wrpcap, EAPOL, Dot11ProbeResp
 except ImportError:
-    Dot11Beacon = Dot11 = Dot11Elt = RadioTap = Dot11Deauth = Dot11Disas = wrpcap = EAPOL = None
+    Dot11Beacon = Dot11 = Dot11Elt = RadioTap = Dot11Deauth = Dot11Disas = wrpcap = EAPOL = Dot11ProbeResp = None
 
 logger = get_logger(__name__)
 
