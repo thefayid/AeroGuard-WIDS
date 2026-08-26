@@ -440,7 +440,6 @@ async function fetchWIPSStatus() {
         const targetsList = document.getElementById('wips-targets-list');
         const noTargets = document.getElementById('wips-no-targets');
         
-        const targets = data.targets || {};
         const targetKeys = Object.keys(targets);
         const deauthsSent = Object.values(targets).reduce((acc, t) => acc + (t.deauths_sent || 0), 0);
 
