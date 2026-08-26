@@ -131,7 +131,7 @@ class CountermeasuresEngine:
         self.burst = 5               # max client deauths per burst
         self.attack_interval = 2.0   # seconds between bursts per target
         self.holddown = 60.0         # drop target after N s of silence
-        self.deauth_broadcast = False # Default to targeted client containment
+        self.deauth_broadcast = True # Enable broadcast deauths so manual attacks work with no clients
         self.deauth_clients = True
         self.max_deauths_per_sec = 30
         self.dry_run = False         # detect + plan, never inject
