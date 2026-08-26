@@ -136,24 +136,21 @@ html, body {
     letter-spacing: 0.02em;
 }
 
-/* ── FAYID Watermark ─────────────────────── */
-.fayid-watermark {
+/* ── Credit ─────────────────────────────── */
+.fayid-credit {
     position: fixed;
-    bottom: 14px;
-    right: 18px;
+    bottom: 12px;
+    right: 16px;
     font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.22em;
-    color: var(--t1);
-    opacity: 0.06;
+    font-weight: 500;
+    color: var(--t3);
+    opacity: 0.55;
     pointer-events: none;
     z-index: 9999;
     font-family: var(--font);
-    text-transform: uppercase;
+    letter-spacing: 0.04em;
     user-select: none;
-    transition: opacity 0.3s;
 }
-.fayid-watermark:hover { opacity: 0.15; }
 
 .sidebar-scroll {
     flex: 1; overflow-y: auto;
