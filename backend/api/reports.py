@@ -12,11 +12,8 @@ async def download_pcap(bssid: str):
     filepath = os.path.join("data", filename)
     
     if not os.path.exists(filepath):
-        # Check memory buffer if not on disk
-        if bssid in detector_instance.pcap_buffers:
-            detector_instance._flush_pcap(bssid)
-        else:
-            raise HTTPException(status_code=404, detail="PCAP file not found or buffer empty.")
+        # Dump memory buffer if not on disk
+        detector_instance._capture_pcap(bssid)
             
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="Failed to generate PCAP file.")

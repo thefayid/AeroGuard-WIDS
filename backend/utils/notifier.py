@@ -1,7 +1,5 @@
 import httpx
-import asyncio
 from backend.utils.logger import get_logger
-
 logger = get_logger(__name__)
 
 WEBHOOK_URL = None # Set this to a Slack/Discord webhook URL if desired

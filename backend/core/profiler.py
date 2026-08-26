@@ -4,7 +4,7 @@ import asyncio
 import os
 from typing import Dict, Any
 from backend.utils.logger import get_logger
-from backend.utils.models import SSIDProfile, BSSIDFingerprint, RSSIBaseline
+from backend.utils.models import SSIDProfile, BSSIDFingerprint
 
 try:
     from scapy.all import Dot11Beacon, Dot11ProbeResp, Dot11, Dot11Elt, RadioTap
@@ -125,8 +125,8 @@ class ProfilerEngine:
                         stats.max_rssi = max(stats.max_rssi, rssi)
                         stats.avg_rssi = ((stats.avg_rssi * (stats.count - 1)) + rssi) / stats.count
 
-            except Exception as e:
-                # logger.debug(f"Packet parse error: {e}")
+            except Exception:
+                # logger.debug(f"Packet parse error")
                 pass
 
     async def save_baseline(self, filepath: str = "data/baseline.json") -> bool:

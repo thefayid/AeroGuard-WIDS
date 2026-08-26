@@ -3,12 +3,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 import asyncio
-import os
-
-from backend.api.routes import router as api_router
 from backend.api.ws import router as ws_router
 from backend.api.ws import manager as ws_manager  # noqa: F401
-from backend.api import routes, ws, reports
+from backend.api import routes, reports
 from backend.core.sniffer import sniffer_instance
 from backend.core.profiler import profiler_instance
 from backend.core.detector import detector_instance
@@ -81,7 +78,7 @@ async def karma_loop():
                     fake_ssid = detector_instance.karma_fake_ssid
                     probe = RadioTap() / Dot11(type=0, subtype=4, addr1="ff:ff:ff:ff:ff:ff", addr2="00:11:22:33:44:55", addr3="ff:ff:ff:ff:ff:ff") / Dot11ProbeReq() / Dot11Elt(ID="SSID", info=fake_ssid.encode())
                     sendp(probe, iface=sniffer_instance.interface, verbose=0)
-                except Exception as e:
+                except Exception:
                     pass # May fail on Windows or if interface is managed
         except asyncio.CancelledError:
             break

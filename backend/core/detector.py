@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any
 import time
 from collections import deque
 from backend.utils.logger import get_logger
@@ -42,10 +42,10 @@ class DetectorEngine:
         self.ml_enabled = False
         import sys
         if sys.platform != "win32":
-            try:
-                import sklearn
+            import importlib.util
+            if importlib.util.find_spec("sklearn"):
                 self.ml_enabled = True
-            except ImportError:
+            else:
                 logger.warning("scikit-learn not installed, ML anomaly detection disabled.")
         else:
             logger.warning("Windows host detected. ML anomaly detection disabled to prevent MemoryError.")
@@ -285,7 +285,7 @@ class DetectorEngine:
                         if prediction[0] == -1: # Anomaly detected
                             score += 25
                             factors.append("W6: ML Anomaly Detected (RSSI deviation)")
-                    except Exception as e:
+                    except Exception:
                         pass
                 
                 if bssid not in profile.bssids:
@@ -409,7 +409,7 @@ class DetectorEngine:
                     )
                     self._capture_pcap(bssid)
 
-        except Exception as e:
+        except Exception:
             pass
             
     def _capture_pcap(self, bssid: str):
@@ -459,7 +459,7 @@ class DetectorEngine:
                 
             self._evaluate_deauth_flood(now)
             
-        except Exception as e:
+        except Exception:
             pass
 
     def _evaluate_deauth_flood(self, current_time: float):
