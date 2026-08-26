@@ -204,34 +204,42 @@
                 </div>
             </div>
 
-            <div class="sgroup">
-                <div class="toggle-row">
-                    <p class="sgroup-title" style="margin:0">Countermeasures (WIPS)</p>
+            <div class="wips-sidebar-block" id="wips-sidebar-block">
+                <div class="wips-sb-header">
+                    <div class="wips-sb-left">
+                        <div class="wips-sb-dot" id="wips-sb-dot"></div>
+                        <div>
+                            <div class="wips-sb-title">WIPS</div>
+                            <div class="wips-sb-status" id="wips-sb-status">Offline</div>
+                        </div>
+                    </div>
                     <label class="ui-toggle">
                         <input type="checkbox" id="toggle-wips">
                         <span class="ui-toggle-track"></span>
                     </label>
                 </div>
-                <div class="slider-item" style="margin-top:8px">
-                    <div class="slider-meta">
-                        <span class="slider-meta-label">Engage Threshold</span>
-                        <span class="slider-meta-val" id="val-wips-threshold">60</span>
+                <div class="wips-sb-body">
+                    <div class="slider-item">
+                        <div class="slider-meta">
+                            <span class="slider-meta-label">Engage Threshold</span>
+                            <span class="slider-meta-val" id="val-wips-threshold">60</span>
+                        </div>
+                        <input type="range" id="slide-wips-threshold" min="30" max="100" value="60" class="ui-slider wips-slider">
                     </div>
-                    <input type="range" id="slide-wips-threshold" min="30" max="100" value="60" class="ui-slider">
-                </div>
-                <div class="slider-item">
-                    <div class="slider-meta">
-                        <span class="slider-meta-label">Deauth Burst</span>
-                        <span class="slider-meta-val" id="val-wips-burst">5</span>
+                    <div class="slider-item">
+                        <div class="slider-meta">
+                            <span class="slider-meta-label">Deauth Burst</span>
+                            <span class="slider-meta-val" id="val-wips-burst">5</span>
+                        </div>
+                        <input type="range" id="slide-wips-burst" min="1" max="20" value="5" class="ui-slider wips-slider">
                     </div>
-                    <input type="range" id="slide-wips-burst" min="1" max="20" value="5" class="ui-slider">
-                </div>
-                <div class="slider-item">
-                    <div class="slider-meta">
-                        <span class="slider-meta-label">Attack Interval (s)</span>
-                        <span class="slider-meta-val" id="val-wips-interval">2.0</span>
+                    <div class="slider-item">
+                        <div class="slider-meta">
+                            <span class="slider-meta-label">Attack Interval (s)</span>
+                            <span class="slider-meta-val" id="val-wips-interval">2.0</span>
+                        </div>
+                        <input type="range" id="slide-wips-interval" min="0.5" max="10.0" step="0.5" value="2.0" class="ui-slider wips-slider">
                     </div>
-                    <input type="range" id="slide-wips-interval" min="0.5" max="10.0" step="0.5" value="2.0" class="ui-slider">
                 </div>
             </div>
 

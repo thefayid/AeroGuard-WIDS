@@ -386,6 +386,24 @@ async function fetchWIPSStatus() {
         if (dot) dot.className = 'wips-pill-dot' + (data.enabled ? ' on' : '');
         if (label) label.textContent = data.enabled ? 'WIPS Active' : 'WIPS Offline';
 
+        // --- Sidebar WIPS block state ---
+        const sbBlock = document.getElementById('wips-sidebar-block');
+        const sbStatus = document.getElementById('wips-sb-status');
+        const targets = data.targets || {};
+        const targetCount = Object.keys(targets).length;
+        if (sbBlock) {
+            sbBlock.classList.remove('armed', 'engaging');
+            if (data.enabled && targetCount > 0) {
+                sbBlock.classList.add('engaging');
+                if (sbStatus) sbStatus.textContent = `Engaging ${targetCount} target${targetCount > 1 ? 's' : ''}`;
+            } else if (data.enabled) {
+                sbBlock.classList.add('armed');
+                if (sbStatus) sbStatus.textContent = 'Armed · Monitoring';
+            } else {
+                if (sbStatus) sbStatus.textContent = 'Offline';
+            }
+        }
+
         // --- Sidebar sliders ---
         if (document.activeElement.id !== 'slide-wips-threshold') {
             document.getElementById('slide-wips-threshold').value = data.config.threshold;
