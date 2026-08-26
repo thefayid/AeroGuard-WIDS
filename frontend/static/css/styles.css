@@ -81,7 +81,7 @@ html, body {
     background: var(--page);
     color: var(--t1);
     font-family: var(--font);
-    font-size: 13px;
+    font-size: 14.5px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     overflow: hidden;
@@ -96,8 +96,8 @@ html, body {
 
 /* ── Sidebar ─────────────────────────────── */
 .sidebar {
-    width: 248px;
-    min-width: 248px;
+    width: 270px;
+    min-width: 270px;
     background: var(--surface);
     border-right: 1px solid var(--border);
     display: flex;
@@ -123,7 +123,7 @@ html, body {
     box-shadow: 0 1px 4px rgba(0,0,0,0.18);
 }
 
-.brand-name { font-size: 14px; font-weight: 700; color: var(--t1); }
+.brand-name { font-size: 16px; font-weight: 700; color: var(--t1); }
 
 .brand-ver {
     margin-left: auto;
@@ -196,13 +196,13 @@ html, body {
 .wips-sidebar-block.armed   .wips-sb-dot { background: var(--green); animation: blink 2s infinite; }
 .wips-sidebar-block.engaging .wips-sb-dot { background: var(--red);   animation: blink 1s infinite; }
 .wips-sb-title {
-    font-size: 11px; font-weight: 700;
+    font-size: 12px; font-weight: 700;
     color: var(--t1);
     letter-spacing: 0.04em;
     text-transform: uppercase;
 }
 .wips-sb-status {
-    font-size: 10px; color: var(--t3);
+    font-size: 11px; color: var(--t3);
     margin-top: 1px;
     transition: color 0.3s;
 }
@@ -230,7 +230,7 @@ html, body {
 .sgroup { display: flex; flex-direction: column; gap: 6px; }
 
 .sgroup-title {
-    font-size: 10px; font-weight: 700;
+    font-size: 11px; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.07em;
     color: var(--t3);
     padding: 0 4px;
@@ -243,8 +243,8 @@ html, body {
     border-radius: var(--r6);
     background: var(--page);
 }
-.srow-label { font-size: 12px; color: var(--t2); }
-.srow-val { font-size: 12px; font-weight: 600; color: var(--t1); font-family: var(--font-mono); }
+.srow-label { font-size: 13.5px; color: var(--t2); }
+.srow-val { font-size: 13.5px; font-weight: 600; color: var(--t1); font-family: var(--font-mono); }
 .srow-val.orange { color: var(--orange); }
 
 /* Select */
@@ -254,7 +254,7 @@ html, body {
     border: 1px solid var(--border);
     border-radius: var(--r6);
     padding: 7px 10px;
-    font-size: 12px; font-family: var(--font);
+    font-size: 14px; font-family: var(--font);
     color: var(--t1); outline: none; cursor: pointer;
     appearance: none;
 }
@@ -305,13 +305,13 @@ html, body {
 /* Buttons */
 .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 5px;
-    font-family: var(--font); font-size: 13px; font-weight: 500;
+    font-family: var(--font); font-size: 14px; font-weight: 500;
     padding: 8px 16px; border-radius: var(--r6);
     border: none; cursor: pointer; white-space: nowrap;
     transition: filter 0.15s, opacity 0.15s;
 }
 .btn:active { opacity: 0.75; }
-.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
 .btn-full { width: 100%; }
 
 .btn-default { background: var(--page); border: 1px solid var(--border); color: var(--t1); }
@@ -401,11 +401,11 @@ html, body {
 
 .kpi-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .kpi-num {
-    font-size: 26px; font-weight: 300; color: var(--t1);
+    font-size: 30px; font-weight: 300; color: var(--t1);
     font-family: var(--font-mono); line-height: 1; letter-spacing: -0.02em;
 }
 .kpi-num.red { color: var(--red); }
-.kpi-label { font-size: 11px; color: var(--t2); font-weight: 500; white-space: nowrap; }
+.kpi-label { font-size: 12px; color: var(--t2); font-weight: 500; white-space: nowrap; }
 
 /* ── Mid Row ─────────────────────────────── */
 .mid-row {
@@ -504,8 +504,8 @@ html, body {
 .threat-dot { width: 7px; height: 7px; border-radius: 50%; background: #c7c7cc; transition: background .3s; }
 .threat-dot.active { background: var(--red); animation: blink 1.5s infinite; }
 
-.table-title { font-size: 12px; font-weight: 600; color: var(--t1); }
-.table-hint  { font-size: 11px; color: var(--t3); }
+.table-title { font-size: 14px; font-weight: 600; color: var(--t1); }
+.table-hint  { font-size: 12px; color: var(--t3); }
 
 .count-chip {
     font-size: 10px; font-weight: 700;
@@ -516,11 +516,11 @@ html, body {
 
 .table-scroll { flex: 1; overflow: auto; }
 
-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
 
 thead th {
     padding: 7px 14px;
-    text-align: left; font-size: 10px; font-weight: 600;
+    text-align: left; font-size: 11px; font-weight: 600;
     color: var(--t3); text-transform: uppercase; letter-spacing: 0.05em;
     border-bottom: 1px solid var(--border-lt);
     background: var(--surface);
