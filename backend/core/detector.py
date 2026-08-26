@@ -34,7 +34,7 @@ class DetectorEngine:
         
         # Dynamic Settings
         self.deauth_threshold = 10
-        self.rssi_variance_tolerance = 15
+        self.rssi_variance_tolerance = 25 # Increased to reduce false positives (natural fading)
         self.critical_cutoff = 70
         
         # Machine Learning Models
@@ -561,7 +561,7 @@ class DetectorEngine:
         for ssid, profile in baseline.items():
             for bssid, fp in profile.bssids.items():
                 if len(fp.historical_rssi) > 10:
-                    model = IsolationForest(contamination=0.05, random_state=42)
+                    model = IsolationForest(contamination=0.01, random_state=42)
                     X = np.array(fp.historical_rssi).reshape(-1, 1)
                     model.fit(X)
                     self.ml_models[bssid] = model
