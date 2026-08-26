@@ -935,3 +935,8 @@ tbody td.blue { color: var(--blue); font-family: var(--font-mono); font-size: 11
 
 [data-theme="dark"] .wips-master-track { background: #2c2c2e; }
 [data-theme="dark"] .wips-master-toggle input:checked + .wips-master-track { background: rgba(255,69,58,0.15); }
+
+/* Context Menu */
+.context-menu-item:hover {
+    background: rgba(255,59,48,0.08) !important;
+}

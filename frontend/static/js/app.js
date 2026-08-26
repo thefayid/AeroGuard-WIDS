@@ -203,7 +203,6 @@ function renderTable() {
             `;
             row.onclick = () => openTargetDetails(ap.bssid);
             tbodyThreats.appendChild(row);
-        } else {
             row.innerHTML = `
                 <td style="font-weight:500">${ap.ssid || '—'}</td>
                 <td class="mono">${ap.bssid}</td>
@@ -213,6 +212,19 @@ function renderTable() {
                 <td class="center dim" style="font-size:11px">${ap.security || 'WPA2'}</td>
                 <td class="right">${scoreCell(score, false, isWarn)}</td>
             `;
+
+            // Context menu for marking legitimate APs as rogue
+            row.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                const menu = document.getElementById('ap-context-menu');
+                menu.style.left = `${e.pageX}px`;
+                menu.style.top = `${e.pageY}px`;
+                menu.classList.remove('hidden');
+                
+                // Set the current target for the context menu action
+                window.contextMenuTarget = ap;
+            });
+
             tbodyLegit.appendChild(row);
         }
     });
@@ -553,6 +565,32 @@ function setupEventListeners() {
         muteBtn.style.color = isMuted ? 'var(--red)' : '';
         muteBtn.style.borderColor = isMuted ? 'rgba(255,59,48,0.4)' : '';
     });
+
+    // Close context menu on global click
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('ap-context-menu');
+        if (menu && !menu.classList.contains('hidden')) {
+            menu.classList.add('hidden');
+        }
+    });
+    
+    // Handle context menu attack button
+    const ctxAttackBtn = document.getElementById('ctx-btn-mark-rogue');
+    if (ctxAttackBtn) {
+        ctxAttackBtn.addEventListener('click', async () => {
+            const ap = window.contextMenuTarget;
+            if (!ap) return;
+            
+            const payload = {
+                ssid: ap.ssid || 'Unknown',
+                bssid: ap.bssid,
+                score: 100 // Force critical score for manual attack
+            };
+            
+            await triggerWIPSAttack(payload, 'ctx-btn-mark-rogue');
+            document.getElementById('ap-context-menu').classList.add('hidden');
+        });
+    }
 
     document.getElementById('btn-theme').addEventListener('click', () => {
         const root = document.documentElement;
