@@ -3,6 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 import asyncio
+import time
 from backend.api.ws import router as ws_router
 from backend.api.ws import manager as ws_manager  # noqa: F401
 from backend.api import routes, reports
@@ -52,11 +53,32 @@ async def telemetry_loop():
                 await ws_manager.broadcast_alert(
                     countermeasures_instance.events.popleft())
             
+            # Telemetry logic
+            active_clients = sum(1 for c in detector_instance.live_clients.values() if time.time() - c['last_seen'] <= 60)
+            
+            max_threat = 0
+            for t in countermeasures_instance._targets.values():
+                max_threat = max(max_threat, t.score)
+            for score in detector_instance.rogue_bssids.values():
+                max_threat = max(max_threat, score)
+                
+            rssis = [ap['rssi'] for ap in detector_instance.live_aps.values() if ap['rssi'] > -100]
+            avg_rssi = sum(rssis) / len(rssis) if rssis else -100
+            
             # Emit Telemetry (1 Hz)
             telemetry = {
                 "total_packets": sniffer_instance.total_packets_scanned,
+                "mgmt_packets": getattr(sniffer_instance, 'mgmt_count', 0),
+                "ctrl_packets": getattr(sniffer_instance, 'ctrl_count', 0),
+                "data_packets": getattr(sniffer_instance, 'data_count', 0),
+                "deauth_packets": getattr(sniffer_instance, 'deauth_count', 0),
+                "total_bytes": getattr(sniffer_instance, 'total_bytes', 0),
                 "active_aps": len(profiler_instance.baseline),
+                "live_aps": len(detector_instance.live_aps),
+                "live_clients": active_clients,
                 "countermeasures_enabled": countermeasures_instance.enabled,
+                "max_threat_score": max_threat,
+                "avg_rssi": avg_rssi,
                 "channel_utilization": 0,  # Placeholder
                 "noise_floor": -90         # Placeholder
             }

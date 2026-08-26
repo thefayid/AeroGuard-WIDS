@@ -24,6 +24,11 @@ class PacketSniffer:
         self.channels = [1, 6, 11] + list(range(2, 11)) # 2.4GHz channels
         self.current_channel_index = 0
         self.hop_interval = 0.5 # seconds
+        self.mgmt_count = 0
+        self.ctrl_count = 0
+        self.data_count = 0
+        self.deauth_count = 0
+        self.total_bytes = 0
 
     def _hop_channels(self):
         logger.info(f"Starting channel hopper on {self.interface}")
@@ -60,7 +65,17 @@ class PacketSniffer:
 
     def _packet_handler(self, packet):
         self.total_packets_scanned += 1
+        self.total_bytes += len(packet)
         if packet.haslayer(Dot11):
+            if packet.type == 0:
+                self.mgmt_count += 1
+                if packet.subtype in (10, 12):
+                    self.deauth_count += 1
+            elif packet.type == 1:
+                self.ctrl_count += 1
+            elif packet.type == 2:
+                self.data_count += 1
+            
             try:
                 self.packet_queue.put_nowait(packet)
             except queue.Full:
@@ -73,6 +88,11 @@ class PacketSniffer:
         
         self.stop_event.clear()
         self.total_packets_scanned = 0
+        self.mgmt_count = 0
+        self.ctrl_count = 0
+        self.data_count = 0
+        self.deauth_count = 0
+        self.total_bytes = 0
         self.sniff_thread = threading.Thread(target=self._sniff_loop, daemon=True)
         self.sniff_thread.start()
         
