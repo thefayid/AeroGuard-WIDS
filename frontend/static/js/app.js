@@ -203,6 +203,7 @@ function renderTable() {
             `;
             row.onclick = () => openTargetDetails(ap.bssid);
             tbodyThreats.appendChild(row);
+        } else {
             row.innerHTML = `
                 <td style="font-weight:500">${ap.ssid || '—'}</td>
                 <td class="mono">${ap.bssid}</td>
