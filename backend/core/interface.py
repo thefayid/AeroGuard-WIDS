@@ -5,10 +5,18 @@ from backend.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-def run_command(cmd: List[str]) -> tuple[int, str, str]:
+def run_command(cmd: List[str], timeout: int = 5) -> tuple[int, str, str]:
     try:
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        stdout, stderr = process.communicate()
+        process = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        )
+        try:
+            stdout, stderr = process.communicate(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.communicate()
+            logger.warning(f"Command timed out after {timeout}s: {' '.join(cmd)}")
+            return -1, "", "timeout"
         return process.returncode, stdout, stderr
     except Exception as e:
         logger.error(f"Failed to execute command {' '.join(cmd)}: {e}")
