@@ -217,6 +217,17 @@ async def trigger_countermeasures(req: CountermeasuresTriggerReq):
         ssid=req.ssid, bssid=req.bssid, score=req.score)
     return countermeasures_instance.status()
 
+
+class CountermeasuresUntriggerReq(BaseModel):
+    bssid: str
+
+
+@router.post("/countermeasures/untrigger")
+async def untrigger_countermeasures(req: CountermeasuresUntriggerReq):
+    """Manually disengage an AP from countermeasures."""
+    countermeasures_instance.untrigger(bssid=req.bssid)
+    return countermeasures_instance.status()
+
 # ---------------------------------------------------------------------------
 # Client Tracking
 # ---------------------------------------------------------------------------

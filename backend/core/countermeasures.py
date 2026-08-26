@@ -428,6 +428,21 @@ class CountermeasuresEngine:
         except Exception as exc:
             logger.error("trigger error: %s", exc)
 
+    def untrigger(self, bssid: str) -> None:
+        """Manual override - remove an AP from the active targets list."""
+        try:
+            bssid = (bssid or "").lower()
+            with self._lock:
+                if bssid in self._targets:
+                    del self._targets[bssid]
+                    self._emit(
+                        "WIPS DISENGAGED - target removed manually",
+                        f"Rogue AP {bssid} removed from active countermeasures.",
+                        {"bssid": bssid, "severity": "INFO"}
+                    )
+        except Exception as exc:
+            logger.error("untrigger error: %s", exc)
+
     def _engage_locked(self, ssid: str, bssid: str, score: int,
                        factors: List[str], rssi: int, channel: int,
                        forced: bool) -> None:

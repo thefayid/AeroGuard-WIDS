@@ -201,6 +201,21 @@ function renderTable() {
                 <td class="center ${sigCls}" style="font-family:var(--font-mono);font-size:11px">${ap.rssi ? ap.rssi + ' dBm' : '—'}</td>
                 <td class="right">${scoreCell(score, true, false)}</td>
             `;
+            // Context menu for unmarking rogue APs back to legitimate
+            row.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                const menu = document.getElementById('ap-context-menu');
+                menu.style.left = `${e.pageX}px`;
+                menu.style.top = `${e.pageY}px`;
+                menu.classList.remove('hidden');
+                
+                // Show/hide buttons based on threat status
+                document.getElementById('ctx-btn-mark-rogue').style.display = 'none';
+                document.getElementById('ctx-btn-unmark').style.display = 'flex';
+                
+                window.contextMenuTarget = ap;
+            });
+
             row.onclick = () => openTargetDetails(ap.bssid);
             tbodyThreats.appendChild(row);
         } else {
@@ -221,6 +236,10 @@ function renderTable() {
                 menu.style.left = `${e.pageX}px`;
                 menu.style.top = `${e.pageY}px`;
                 menu.classList.remove('hidden');
+                
+                // Show/hide buttons based on threat status
+                document.getElementById('ctx-btn-mark-rogue').style.display = 'flex';
+                document.getElementById('ctx-btn-unmark').style.display = 'none';
                 
                 // Set the current target for the context menu action
                 window.contextMenuTarget = ap;
@@ -589,6 +608,31 @@ function setupEventListeners() {
             };
             
             await triggerWIPSAttack(payload, 'ctx-btn-mark-rogue');
+            document.getElementById('ap-context-menu').classList.add('hidden');
+        });
+    }
+
+    // Handle context menu unmark button
+    const ctxUnmarkBtn = document.getElementById('ctx-btn-unmark');
+    if (ctxUnmarkBtn) {
+        ctxUnmarkBtn.addEventListener('click', async () => {
+            const ap = window.contextMenuTarget;
+            if (!ap) return;
+            
+            try {
+                const res = await fetch('/api/countermeasures/untrigger', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bssid: ap.bssid })
+                });
+                
+                if (res.ok) {
+                    showToast('Target Removed', `Stopped WIPS against ${ap.ssid || ap.bssid}`, 'green');
+                }
+            } catch (e) {
+                console.error("Failed to unmark", e);
+            }
+            
             document.getElementById('ap-context-menu').classList.add('hidden');
         });
     }
