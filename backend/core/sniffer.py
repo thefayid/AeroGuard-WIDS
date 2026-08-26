@@ -56,8 +56,7 @@ class PacketSniffer:
                 iface=self.interface,
                 prn=self._packet_handler,
                 stop_filter=lambda p: self.stop_event.is_set(),
-                store=False,
-                monitor=True
+                store=False
             )
         except Exception as e:
             logger.error(f"Sniffer error on {self.interface}: {e}")

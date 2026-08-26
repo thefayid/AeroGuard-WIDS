@@ -6,6 +6,7 @@ services:
     container_name: aeroguard-ids
     restart: unless-stopped
     network_mode: "host"
+    pid: "host"
     cap_add:
       - NET_ADMIN
       - NET_RAW
