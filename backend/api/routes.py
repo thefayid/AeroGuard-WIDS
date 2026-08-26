@@ -226,6 +226,15 @@ class CountermeasuresUntriggerReq(BaseModel):
 async def untrigger_countermeasures(req: CountermeasuresUntriggerReq):
     """Manually disengage an AP from countermeasures."""
     countermeasures_instance.untrigger(bssid=req.bssid)
+    
+    # Also clear it from the detector's rogue tracking so it stops showing up as a threat
+    bssid_lower = req.bssid.lower()
+    if bssid_lower in detector_instance.rogue_bssids:
+        del detector_instance.rogue_bssids[bssid_lower]
+    if bssid_lower in detector_instance.live_aps:
+        detector_instance.live_aps[bssid_lower]['is_rogue'] = False
+        detector_instance.live_aps[bssid_lower]['score'] = 0
+        
     return countermeasures_instance.status()
 
 # ---------------------------------------------------------------------------
