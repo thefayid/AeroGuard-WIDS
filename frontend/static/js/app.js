@@ -543,6 +543,21 @@ async function fetchWIPSStatus() {
                         <span style="opacity:0.5;font-size:10px">${t.deauths_sent || 0} deauths</span>
                     `;
                     chip.onclick = () => openTargetDetails(bssid);
+                    
+                    // Allow unmarking directly from the active WIPS chip
+                    chip.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        const menu = document.getElementById('ap-context-menu');
+                        menu.style.left = `${e.pageX}px`;
+                        menu.style.top = `${e.pageY}px`;
+                        menu.classList.remove('hidden');
+                        
+                        document.getElementById('ctx-btn-mark-rogue').style.display = 'none';
+                        document.getElementById('ctx-btn-unmark').style.display = 'flex';
+                        
+                        window.contextMenuTarget = { bssid: bssid, ssid: ssid };
+                    });
+                    
                     targetsList.appendChild(chip);
                 });
             }
