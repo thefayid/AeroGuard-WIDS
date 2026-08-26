@@ -371,6 +371,13 @@ class DetectorEngine:
                     extra={"rssi": rssi, "channel": channel}
                 )
                 
+                # If this AP was manually engaged (or engaged by WIPS), preserve its active threat score
+                if bssid in countermeasures_instance._targets:
+                    wips_target = countermeasures_instance._targets[bssid]
+                    score = max(score, wips_target.score)
+                    if wips_target.forced and "MANUAL TRIGGER" not in factors:
+                        factors.append("MANUAL TRIGGER")
+                
                 # Keep track of known rogues
                 if score >= 40:
                     self.rogue_bssids[bssid] = score
