@@ -215,6 +215,14 @@ async def trigger_countermeasures(req: CountermeasuresTriggerReq):
     """Manually engage a rogue AP (testing / manual override)."""
     countermeasures_instance.trigger(
         ssid=req.ssid, bssid=req.bssid, score=req.score)
+        
+    # Also update the detector's rogue tracking so it moves to the Active Threats table
+    bssid_lower = req.bssid.lower()
+    detector_instance.rogue_bssids[bssid_lower] = req.score
+    if bssid_lower in detector_instance.live_aps:
+        detector_instance.live_aps[bssid_lower]['is_rogue'] = True
+        detector_instance.live_aps[bssid_lower]['score'] = req.score
+        
     return countermeasures_instance.status()
 
 
