@@ -236,6 +236,8 @@ class DetectorEngine:
             for b in stale_bssids:
                 del self.live_aps[b]
 
+            is_rogue = bssid in self.rogue_bssids
+            
             # Update live state
             self.live_aps[bssid] = {
                 "ssid": ssid,
@@ -244,8 +246,10 @@ class DetectorEngine:
                 "vendor": oui,
                 "security": encryption_capabilities[0],
                 "last_seen": now_ts,
-                "is_rogue": False # Will be updated if detected as rogue below
+                "is_rogue": is_rogue
             }
+            if is_rogue:
+                self.live_aps[bssid]['score'] = self.rogue_bssids[bssid]
 
             if skip_threats:
                 return
@@ -385,6 +389,8 @@ class DetectorEngine:
                     self.live_aps[bssid]['score'] = score
                 elif bssid in self.rogue_bssids:
                     del self.rogue_bssids[bssid]
+                    self.live_aps[bssid]['is_rogue'] = False
+                    self.live_aps[bssid]['score'] = 0
 
                 if score < 40:
                     pass
