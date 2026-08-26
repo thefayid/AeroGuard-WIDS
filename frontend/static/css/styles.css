@@ -410,7 +410,7 @@ html, body {
 /* ── Mid Row ─────────────────────────────── */
 .mid-row {
     display: grid; grid-template-columns: 220px 1fr;
-    gap: 12px; height: 190px; flex-shrink: 0;
+    gap: 12px; height: 340px; flex-shrink: 0;
 }
 
 .card {

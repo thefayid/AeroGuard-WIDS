@@ -233,36 +233,51 @@ function renderTable() {
 }
 
 async function loadInterfaces() {
+    const select = document.getElementById('interface-select');
     try {
-        const res = await fetch('/api/interfaces');
+        const res = await fetch('/api/interfaces', { signal: AbortSignal.timeout(4000) });
         const data = await res.json();
-        const select = document.getElementById('interface-select');
         select.innerHTML = '<option value="" disabled selected>Select Interface...</option>';
+        if (data.length === 0) {
+            select.innerHTML = '<option value="" disabled selected>No interfaces found</option>';
+            return;
+        }
         data.forEach(iface => {
             const opt = document.createElement('option');
             opt.value = iface.name;
             opt.innerText = `${iface.name} [${iface.mode.toUpperCase()}]`;
             select.appendChild(opt);
-            if(iface.mode === 'monitor') {
+            if (iface.mode === 'monitor') {
                 document.getElementById('active-iface').innerText = iface.name;
             }
         });
     } catch(e) {
-        document.getElementById('interface-select').innerHTML = '<option>Offline</option>';
+        select.innerHTML = '<option value="" disabled selected>Backend offline</option>';
+        // Retry in 5s
+        setTimeout(loadInterfaces, 5000);
     }
 }
 
 async function pollHealth() {
+    const snifferEl = document.getElementById('stat-sniffer');
     try {
-        const res = await fetch('/api/health');
+        const res = await fetch('/api/health', { signal: AbortSignal.timeout(3000) });
         const data = await res.json();
-        document.getElementById('stat-cpu').innerText = `${data.cpu_usage_percent}%`;
-        document.getElementById('stat-ram').innerText = `${data.memory_usage_percent}%`;
-        const snifferEl = document.getElementById('stat-sniffer');
-        snifferEl.innerText = data.sniffer_active ? 'Active' : 'Idle';
-        snifferEl.className = data.sniffer_active ? 'text-primary font-medium' : 'text-amber-500 font-medium';
-        snifferEl.className = data.sniffer_active ? 'text-primary font-medium' : 'text-amber-500 font-medium';
-    } catch(e) {}
+        const cpu = document.getElementById('stat-cpu');
+        const ram = document.getElementById('stat-ram');
+        if (cpu) cpu.innerText = `${data.cpu_usage_percent}%`;
+        if (ram) ram.innerText = `${data.memory_usage_percent}%`;
+        if (snifferEl) {
+            snifferEl.innerText = data.sniffer_active ? 'Active' : 'Idle';
+            snifferEl.className = 'srow-val ' + (data.sniffer_active ? 'accent' : 'orange');
+        }
+    } catch(e) {
+        if (snifferEl) { snifferEl.innerText = 'Offline'; snifferEl.className = 'srow-val red'; }
+        const cpu = document.getElementById('stat-cpu');
+        const ram = document.getElementById('stat-ram');
+        if (cpu) cpu.innerText = '—';
+        if (ram) ram.innerText = '—';
+    }
 }
 
 async function pollLiveNetworks() {
