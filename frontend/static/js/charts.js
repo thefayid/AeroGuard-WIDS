@@ -23,7 +23,10 @@ function initCharts() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: { duration: 0 },
+            animation: { 
+                duration: 1000,
+                easing: 'linear'
+            },
             interaction: { mode: 'index', intersect: false },
             scales: {
                 x: { display: false },
