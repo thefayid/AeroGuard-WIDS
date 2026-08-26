@@ -218,6 +218,12 @@ class DetectorEngine:
                 elt = elt.payload.getlayer(Dot11Elt)
                 
             if not ssid:
+                if bssid in self.live_aps:
+                    ssid = self.live_aps[bssid].get('ssid', "")
+                elif bssid in countermeasures_instance._targets:
+                    ssid = countermeasures_instance._targets[bssid].ssid
+                    
+            if not ssid:
                 return
 
             rssi = -100
@@ -232,7 +238,10 @@ class DetectorEngine:
             
             # Clean up old live APs (older than 15s)
             now_ts = time.time()
-            stale_bssids = [b for b, data in self.live_aps.items() if now_ts - data['last_seen'] > 15]
+            stale_bssids = [b for b, data in self.live_aps.items() 
+                            if now_ts - data['last_seen'] > 15 
+                            and b not in self.rogue_bssids 
+                            and b not in countermeasures_instance._targets]
             for b in stale_bssids:
                 del self.live_aps[b]
 
