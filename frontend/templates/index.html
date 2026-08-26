@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AeroGuard — Network Security</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="/static/css/styles.css?v=5">
+    <link rel="stylesheet" href="/static/css/styles.css?v=7">
 </head>
 <body>
 
@@ -297,13 +297,13 @@
                         <div class="kpi-label">Packets / Second</div>
                     </div>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-icon gray">
+                <div class="kpi-card" id="kpi-wips-card">
+                    <div class="kpi-icon" id="kpi-wips-icon" style="background: rgba(255,149,0,0.1); color: var(--orange);">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                     </div>
                     <div class="kpi-text">
-                        <div class="kpi-num" id="kpi-deauths" style="font-size:20px">Demo</div>
-                        <div class="kpi-label">WIPS Mode</div>
+                        <div class="kpi-num" id="kpi-wips-targets" style="font-size:26px">0</div>
+                        <div class="kpi-label" id="kpi-wips-label">WIPS Offline</div>
                     </div>
                 </div>
             </div>
@@ -351,7 +351,49 @@
                 </div>
             </div>
 
-            <!-- Tables -->
+            <!-- WIPS Command Center -->
+            <div class="card wips-command" id="wips-command-card">
+                <div class="wips-cmd-hd">
+                    <div class="wips-cmd-left">
+                        <div class="wips-cmd-icon" id="wips-cmd-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        </div>
+                        <div>
+                            <div class="wips-cmd-title">WIPS Countermeasures</div>
+                            <div class="wips-cmd-sub" id="wips-cmd-sub">Wireless Intrusion Prevention System — Offline</div>
+                        </div>
+                    </div>
+                    <div class="wips-cmd-right">
+                        <div class="wips-stats">
+                            <div class="wips-stat">
+                                <div class="wips-stat-val" id="wips-stat-targets">0</div>
+                                <div class="wips-stat-label">Active Targets</div>
+                            </div>
+                            <div class="wips-stat-divider"></div>
+                            <div class="wips-stat">
+                                <div class="wips-stat-val" id="wips-stat-deauths">0</div>
+                                <div class="wips-stat-label">Deauths Sent</div>
+                            </div>
+                            <div class="wips-stat-divider"></div>
+                            <div class="wips-stat">
+                                <div class="wips-stat-val" id="wips-stat-threshold">60</div>
+                                <div class="wips-stat-label">Engage Threshold</div>
+                            </div>
+                        </div>
+                        <label class="wips-master-toggle">
+                            <input type="checkbox" id="toggle-wips-cmd" onchange="onWIPSCmdToggle(this.checked)">
+                            <span class="wips-master-track">
+                                <span class="wips-master-thumb"></span>
+                                <span class="wips-master-label-on">ACTIVE</span>
+                                <span class="wips-master-label-off">ENGAGE</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="wips-cmd-targets" id="wips-targets-list">
+                    <div class="wips-empty" id="wips-no-targets">No active rogue AP targets. System is monitoring.</div>
+                </div>
+            </div>
             <div class="table-section">
 
                 <!-- Active Threats -->

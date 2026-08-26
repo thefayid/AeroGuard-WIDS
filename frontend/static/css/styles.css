@@ -650,3 +650,190 @@ tbody td.blue { color: var(--blue); font-family: var(--font-mono); font-size: 11
     white-space: nowrap;
     box-shadow: var(--shadow-md);
 }
+
+/* ── WIPS Command Center ─────────────────────── */
+.wips-command {
+    flex-shrink: 0;
+    overflow: visible;
+    border: 1px solid var(--border-lt);
+    transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.wips-command.wips-active {
+    border-color: rgba(255, 59, 48, 0.5);
+    box-shadow: 0 0 0 1px rgba(255, 59, 48, 0.15), 0 4px 24px rgba(255, 59, 48, 0.1);
+    animation: wips-pulse-border 2.5s ease-in-out infinite;
+}
+
+@keyframes wips-pulse-border {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(255, 59, 48, 0.15), 0 4px 24px rgba(255, 59, 48, 0.10); }
+    50%       { box-shadow: 0 0 0 1px rgba(255, 59, 48, 0.30), 0 4px 32px rgba(255, 59, 48, 0.20); }
+}
+
+.wips-cmd-hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-lt);
+    gap: 16px;
+}
+
+.wips-cmd-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.wips-cmd-icon {
+    width: 40px; height: 40px;
+    border-radius: var(--r10);
+    background: rgba(255, 149, 0, 0.1);
+    color: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.3s, color 0.3s;
+}
+.wips-command.wips-active .wips-cmd-icon {
+    background: rgba(255, 59, 48, 0.12);
+    color: var(--red);
+    animation: wips-icon-pop 2.5s ease-in-out infinite;
+}
+@keyframes wips-icon-pop {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+
+.wips-cmd-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--t1);
+    letter-spacing: -0.01em;
+}
+.wips-cmd-sub {
+    font-size: 11px;
+    color: var(--t3);
+    margin-top: 2px;
+    transition: color 0.3s;
+}
+.wips-command.wips-active .wips-cmd-sub { color: var(--red); }
+
+.wips-cmd-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+}
+
+.wips-stats {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.wips-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+.wips-stat-val {
+    font-size: 22px; font-weight: 300;
+    font-family: var(--font-mono);
+    letter-spacing: -0.02em;
+    color: var(--t1);
+    line-height: 1;
+    transition: color 0.3s;
+}
+.wips-command.wips-active .wips-stat-val { color: var(--red); }
+.wips-stat-label {
+    font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--t3);
+    white-space: nowrap;
+}
+
+.wips-stat-divider {
+    width: 1px; height: 32px;
+    background: var(--border-lt);
+}
+
+/* Master Toggle */
+.wips-master-toggle { cursor: pointer; }
+.wips-master-toggle input { display: none; }
+.wips-master-track {
+    display: flex; align-items: center;
+    height: 38px; padding: 0 16px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--page);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+    color: var(--t2);
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+}
+.wips-master-track:hover { border-color: var(--orange); color: var(--orange); }
+.wips-master-thumb {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--t3);
+    transition: background 0.25s;
+}
+.wips-master-label-on { display: none; }
+.wips-master-label-off { display: block; }
+
+.wips-master-toggle input:checked + .wips-master-track {
+    border-color: var(--red);
+    background: rgba(255, 59, 48, 0.08);
+    color: var(--red);
+    box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.12);
+}
+.wips-master-toggle input:checked + .wips-master-track .wips-master-thumb {
+    background: var(--red);
+    animation: blink 1s ease-in-out infinite;
+}
+.wips-master-toggle input:checked + .wips-master-track .wips-master-label-on { display: block; }
+.wips-master-toggle input:checked + .wips-master-track .wips-master-label-off { display: none; }
+
+/* Targets list */
+.wips-cmd-targets {
+    padding: 10px 18px 12px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 48px;
+    align-items: center;
+}
+.wips-empty {
+    font-size: 11px; color: var(--t3);
+    font-style: italic;
+}
+.wips-target-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: rgba(255, 59, 48, 0.08);
+    border: 1px solid rgba(255, 59, 48, 0.25);
+    font-size: 11px; font-family: var(--font-mono);
+    color: var(--red);
+    animation: chip-in 0.3s cubic-bezier(.22,1,.36,1);
+}
+@keyframes chip-in {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 1; transform: scale(1); }
+}
+.wips-target-chip-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%; background: var(--red);
+    animation: blink 1s ease-in-out infinite;
+}
+.wips-target-score {
+    font-size: 10px; color: rgba(255,59,48,0.7);
+    font-weight: 700;
+}
+
+[data-theme="dark"] .wips-master-track { background: #2c2c2e; }
+[data-theme="dark"] .wips-master-toggle input:checked + .wips-master-track { background: rgba(255,69,58,0.15); }

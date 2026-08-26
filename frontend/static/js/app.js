@@ -375,16 +375,18 @@ async function fetchWIPSStatus() {
     try {
         const res = await fetch('/api/countermeasures');
         const data = await res.json();
+        
+        // --- Existing sidebar toggle sync ---
         const toggle = document.getElementById('toggle-wips');
         if (toggle && document.activeElement !== toggle) toggle.checked = data.enabled;
 
+        // --- Topbar pill ---
         const dot = document.getElementById('wips-dot');
         const label = document.getElementById('wips-label');
-        const kpiMode = document.getElementById('kpi-deauths');
         if (dot) dot.className = 'wips-pill-dot' + (data.enabled ? ' on' : '');
         if (label) label.textContent = data.enabled ? 'WIPS Active' : 'WIPS Offline';
-        if (kpiMode) kpiMode.textContent = data.demo_mode ? 'Demo' : 'Live';
 
+        // --- Sidebar sliders ---
         if (document.activeElement.id !== 'slide-wips-threshold') {
             document.getElementById('slide-wips-threshold').value = data.config.threshold;
             document.getElementById('val-wips-threshold').innerText = data.config.threshold;
@@ -397,9 +399,105 @@ async function fetchWIPSStatus() {
             document.getElementById('slide-wips-interval').value = data.config.attack_interval;
             document.getElementById('val-wips-interval').innerText = data.config.attack_interval;
         }
+        
+        // --- New WIPS Command Center ---
+        const cmdCard = document.getElementById('wips-command-card');
+        const cmdToggle = document.getElementById('toggle-wips-cmd');
+        const cmdSub = document.getElementById('wips-cmd-sub');
+        const targetsList = document.getElementById('wips-targets-list');
+        const noTargets = document.getElementById('wips-no-targets');
+        
+        const targets = data.targets || {};
+        const targetKeys = Object.keys(targets);
+        const deauthsSent = Object.values(targets).reduce((acc, t) => acc + (t.deauths_sent || 0), 0);
+
+        // Sync command toggle
+        if (cmdToggle && document.activeElement !== cmdToggle) cmdToggle.checked = data.enabled;
+        
+        // Animate card state
+        if (cmdCard) {
+            if (data.enabled && targetKeys.length > 0) {
+                cmdCard.classList.add('wips-active');
+            } else {
+                cmdCard.classList.remove('wips-active');
+            }
+        }
+        
+        // Update sub-label
+        if (cmdSub) {
+            if (data.enabled && targetKeys.length > 0) {
+                cmdSub.textContent = `Actively suppressing ${targetKeys.length} rogue AP${targetKeys.length > 1 ? 's' : ''}. Deauthenticating associated clients.`;
+            } else if (data.enabled) {
+                cmdSub.textContent = 'Wireless Intrusion Prevention System — Armed & Monitoring';
+            } else {
+                cmdSub.textContent = 'Wireless Intrusion Prevention System — Offline';
+            }
+        }
+
+        // Update stats
+        const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        setEl('wips-stat-targets', targetKeys.length);
+        setEl('wips-stat-deauths', deauthsSent);
+        setEl('wips-stat-threshold', data.config.threshold);
+        setEl('kpi-wips-targets', targetKeys.length);
+        setEl('kpi-wips-label', data.enabled ? (targetKeys.length > 0 ? 'WIPS Engaging' : 'WIPS Armed') : 'WIPS Offline');
+        
+        // KPI card state
+        const kpiIcon = document.getElementById('kpi-wips-icon');
+        if (kpiIcon) {
+            if (data.enabled && targetKeys.length > 0) {
+                kpiIcon.style.background = 'rgba(255,59,48,0.12)';
+                kpiIcon.style.color = 'var(--red)';
+            } else if (data.enabled) {
+                kpiIcon.style.background = 'rgba(52,199,89,0.1)';
+                kpiIcon.style.color = 'var(--green)';
+            } else {
+                kpiIcon.style.background = 'rgba(255,149,0,0.1)';
+                kpiIcon.style.color = 'var(--orange)';
+            }
+        }
+        
+        // Render target chips
+        if (targetsList) {
+            // Clear old chips, preserve noTargets element
+            Array.from(targetsList.querySelectorAll('.wips-target-chip')).forEach(c => c.remove());
+            
+            if (targetKeys.length === 0) {
+                if (noTargets) noTargets.style.display = 'block';
+            } else {
+                if (noTargets) noTargets.style.display = 'none';
+                targetKeys.forEach(bssid => {
+                    const t = targets[bssid];
+                    const ssid = t.ssid || discoveredAPs.get(bssid)?.ssid || bssid;
+                    const chip = document.createElement('div');
+                    chip.className = 'wips-target-chip';
+                    chip.innerHTML = `
+                        <div class="wips-target-chip-dot"></div>
+                        <strong>${ssid}</strong>
+                        <span style="opacity:0.6">${bssid.toUpperCase()}</span>
+                        <span class="wips-target-score">S:${t.score || '?'}</span>
+                        <span style="opacity:0.5;font-size:10px">${t.deauths_sent || 0} deauths</span>
+                    `;
+                    chip.onclick = () => openTargetDetails(bssid);
+                    targetsList.appendChild(chip);
+                });
+            }
+        }
     } catch(e) {
         console.error('Failed to fetch WIPS status', e);
     }
+}
+
+async function onWIPSCmdToggle(enabled) {
+    // Sync the sidebar toggle
+    const sidebarToggle = document.getElementById('toggle-wips');
+    if (sidebarToggle) sidebarToggle.checked = enabled;
+    await fetch('/api/countermeasures/enable', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ enabled })
+    });
+    fetchWIPSStatus();
 }
 
 function updateWIPSConfig() {
