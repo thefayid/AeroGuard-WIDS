@@ -146,6 +146,7 @@ class CountermeasuresEngine:
         self._candidates: Dict[str, _ThreatTarget] = {}
         self._ap_obs: Dict[str, Dict[str, Any]] = {}   # bssid -> observation
         self._events: Deque[Dict[str, Any]] = deque(maxlen=200)
+        self._whitelist: Set[str] = set()
         self._stop_event = threading.Event()
         self._thread: Optional[threading.Thread] = None
         self._rate_window: Deque[float] = deque()
@@ -375,6 +376,9 @@ class CountermeasuresEngine:
             if not bssid or not ssid:
                 return
 
+            if bssid in self._whitelist:
+                return
+
             legit = self._legit_bssids(ssid)
             if bssid in legit:
                 # Legitimate AP - demote if we previously engaged it manually
@@ -423,6 +427,8 @@ class CountermeasuresEngine:
         try:
             bssid = (bssid or "").lower()
             with self._lock:
+                if bssid in self._whitelist:
+                    self._whitelist.remove(bssid)
                 self._engage_locked(str(ssid or "?"), bssid, int(score),
                                     ["MANUAL TRIGGER"], -100, 0, forced=True)
         except Exception as exc:
@@ -433,6 +439,7 @@ class CountermeasuresEngine:
         try:
             bssid = (bssid or "").lower()
             with self._lock:
+                self._whitelist.add(bssid)
                 if bssid in self._targets:
                     del self._targets[bssid]
                     self._emit(

@@ -401,7 +401,7 @@ class DetectorEngine:
                         }
                     )
                 else:
-                    self._trigger_alert(
+                    triggered = self._trigger_alert(
                         "CRITICAL EVIL TWIN ATTACK IN PROGRESS",
                         f"Threat Score: {score}/100. Vectors: {', '.join(factors)}",
                         {
@@ -414,7 +414,8 @@ class DetectorEngine:
                             "channel": channel
                         }
                     )
-                    self._capture_pcap(bssid)
+                    if triggered:
+                        self._capture_pcap(bssid)
 
         except Exception:
             pass
@@ -512,13 +513,13 @@ class DetectorEngine:
             )
             self.deauth_window.clear()
 
-    def _trigger_alert(self, title: str, description: str, metadata: Dict[str, Any]):
+    def _trigger_alert(self, title: str, description: str, metadata: Dict[str, Any]) -> bool:
         cache_key = f"{title}_{metadata.get('bssid')}"
         
         # Debounce alerts for the same BSSID to prevent UI spam
         if cache_key in self.last_alert_time:
             if time.time() - self.last_alert_time[cache_key] < 30:
-                return
+                return False
         
         self.last_alert_time[cache_key] = time.time()
         
@@ -557,6 +558,8 @@ class DetectorEngine:
                 db.close()
             except Exception as e:
                 logger.error(f"Failed to log incident to DB: {e}")
+                
+        return True
 
     def train_ml_models(self):
         if not self.ml_enabled: return

@@ -105,7 +105,11 @@ class ProfilerEngine:
                     
                     profile = self.baseline[ssid]
                     if bssid not in profile.bssids:
-                        profile.bssids[bssid] = BSSIDFingerprint(bssid=bssid, oui_vendor=oui)
+                        profile.bssids[bssid] = BSSIDFingerprint(
+                            bssid=bssid,
+                            channels=[channel],
+                            oui_vendor=oui
+                        )
                     
                     fingerprint = profile.bssids[bssid]
                     
