@@ -78,6 +78,12 @@ Once the server is running, open your web browser and navigate to:
 
 ## 📸 Interface Guide
 
+![WIPS Armed Mode](assets/wips_armed.png)
+*AeroGuard in armed mode, monitoring the airspace and tracking AP metrics.*
+
+![WIPS Active Countermeasures](assets/wips_active.png)
+*AeroGuard actively suppressing a detected rogue Evil Twin AP using targeted deauthentication.*
+
 *   **Radar:** Provides a visual representation of nearby BSSIDs. Red dots indicate critical threats, amber indicates suspicious activity, and blue indicates legitimate networks.
 *   **Target Inspection:** Click any row in the "Active Threats" table to open the inspection modal. Here you can view forensic details, see the list of **Compromised Clients**, and manually engage the WIPS engine.
 *   **Attack Mode:** Before engaging, you can choose between **Targeted Containment** (deauth only victims) or **Full BSSID Takedown** (broadcast deauth).
