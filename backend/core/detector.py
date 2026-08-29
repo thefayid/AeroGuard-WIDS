@@ -240,14 +240,21 @@ class DetectorEngine:
 
             oui = bssid[:8].upper()
             
-            # Clean up old live APs (older than 15s)
+            # Clean up old live APs (older than 60s)
             now_ts = time.time()
             stale_bssids = [b for b, data in self.live_aps.items() 
-                            if now_ts - data['last_seen'] > 15 
+                            if now_ts - data['last_seen'] > 60 
                             and b not in self.rogue_bssids 
-                            and b not in countermeasures_instance._targets]
+                            and b not in countermeasures_instance._targets
+                            and b != self.monitored_ap]
             for b in stale_bssids:
                 del self.live_aps[b]
+                
+            # Clean up old live clients (older than 120s)
+            stale_clients = [c for c, data in self.live_clients.items()
+                             if now_ts - data['last_seen'] > 120]
+            for c in stale_clients:
+                del self.live_clients[c]
 
             is_rogue = bssid in self.rogue_bssids
             
