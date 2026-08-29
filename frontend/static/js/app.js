@@ -240,8 +240,17 @@ function renderTable() {
                 menu.style.top = `${e.pageY}px`;
                 menu.classList.remove('hidden');
                 
+                const monitorBtn = document.getElementById('ctx-btn-monitor');
+                if (window.currentMonitoredAP && ap.bssid === window.currentMonitoredAP) {
+                    monitorBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg> Stop Monitoring`;
+                    monitorBtn.style.color = "var(--orange)";
+                } else {
+                    monitorBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Monitor for Deauths`;
+                    monitorBtn.style.color = "var(--blue)";
+                }
+                
                 // Show/hide buttons based on threat status
-                document.getElementById('ctx-btn-monitor').style.display = 'flex';
+                monitorBtn.style.display = 'flex';
                 document.getElementById('ctx-btn-mark-rogue').style.display = 'flex';
                 document.getElementById('ctx-btn-unmark').style.display = 'none';
                 
@@ -640,12 +649,23 @@ function setupEventListeners() {
             const ap = window.contextMenuTarget;
             if (!ap) return;
             document.getElementById('ap-context-menu').classList.add('hidden');
+            
+            let targetBssid = ap.bssid;
+            let actionText = "Monitoring Started";
+            let msgText = `Now actively monitoring ${ap.ssid || ap.bssid} for targeted deauth attacks.`;
+            
+            if (window.currentMonitoredAP === ap.bssid) {
+                targetBssid = null;
+                actionText = "Monitoring Stopped";
+                msgText = `Stopped monitoring ${ap.ssid || ap.bssid}.`;
+            }
+            
             await fetch('/api/monitor/target', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ bssid: ap.bssid })
+                body: JSON.stringify({ bssid: targetBssid })
             });
-            showToast('Monitoring Started', `Now actively monitoring ${ap.ssid || ap.bssid}`, 'blue');
+            showToast(actionText, msgText, 'blue');
         });
     }
 
