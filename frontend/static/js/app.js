@@ -219,6 +219,9 @@ function renderTable() {
             row.onclick = () => openTargetDetails(ap.bssid);
             tbodyThreats.appendChild(row);
         } else {
+            if (window.currentMonitoredAP && ap.bssid === window.currentMonitoredAP) {
+                row.classList.add('monitored-row');
+            }
             row.innerHTML = `
                 <td style="font-weight:500">${ap.ssid || '—'}</td>
                 <td class="mono">${ap.bssid}</td>
@@ -238,6 +241,7 @@ function renderTable() {
                 menu.classList.remove('hidden');
                 
                 // Show/hide buttons based on threat status
+                document.getElementById('ctx-btn-monitor').style.display = 'flex';
                 document.getElementById('ctx-btn-mark-rogue').style.display = 'flex';
                 document.getElementById('ctx-btn-unmark').style.display = 'none';
                 
@@ -303,6 +307,7 @@ async function pollHealth() {
             snifferEl.innerText = data.sniffer_active ? 'Active' : 'Idle';
             snifferEl.className = 'srow-val ' + (data.sniffer_active ? 'accent' : 'orange');
         }
+        window.currentMonitoredAP = data.monitored_ap;
     } catch(e) {
         if (snifferEl) { snifferEl.innerText = 'Offline'; snifferEl.className = 'srow-val red'; }
         const cpu = document.getElementById('stat-cpu');
@@ -552,6 +557,7 @@ async function fetchWIPSStatus() {
                         menu.style.top = `${e.pageY}px`;
                         menu.classList.remove('hidden');
                         
+                        document.getElementById('ctx-btn-monitor').style.display = 'none';
                         document.getElementById('ctx-btn-mark-rogue').style.display = 'none';
                         document.getElementById('ctx-btn-unmark').style.display = 'flex';
                         
@@ -624,6 +630,22 @@ function setupEventListeners() {
             
             await triggerWIPSAttack(payload, 'ctx-btn-mark-rogue');
             document.getElementById('ap-context-menu').classList.add('hidden');
+        });
+    }
+
+    // Handle context menu monitor button
+    const ctxMonitorBtn = document.getElementById('ctx-btn-monitor');
+    if (ctxMonitorBtn) {
+        ctxMonitorBtn.addEventListener('click', async () => {
+            const ap = window.contextMenuTarget;
+            if (!ap) return;
+            document.getElementById('ap-context-menu').classList.add('hidden');
+            await fetch('/api/monitor/target', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ bssid: ap.bssid })
+            });
+            showToast('Monitoring Started', `Now actively monitoring ${ap.ssid || ap.bssid}`, 'blue');
         });
     }
 

@@ -14,6 +14,9 @@ from backend.core.detector import detector_instance
 from backend.core.countermeasures import countermeasures_instance
 from backend.utils.models import InterfaceInfo, SettingsModel
 
+class TargetMonitorReq(BaseModel):
+    bssid: str | None = None
+
 router = APIRouter()
 
 START_TIME = time.time()
@@ -29,8 +32,15 @@ async def health_check():
         "uptime_seconds": round(uptime, 2),
         "sniffer_active": sniffer_instance.is_active(),
         "cpu_usage_percent": cpu_usage,
-        "memory_usage_percent": memory.percent
+        "memory_usage_percent": memory.percent,
+        "monitored_ap": detector_instance.monitored_ap
     }
+
+@router.post("/monitor/target")
+async def set_monitored_target(req: TargetMonitorReq):
+    detector_instance.monitored_ap = req.bssid.lower() if req.bssid else None
+    detector_instance.last_monitored_alert_ts = 0
+    return {"status": "success", "monitored_ap": detector_instance.monitored_ap}
 
 @router.get("/interfaces", response_model=List[InterfaceInfo])
 async def get_interfaces():

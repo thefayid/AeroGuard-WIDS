@@ -40,6 +40,10 @@ class DetectorEngine:
         # Machine Learning Models
         self.ml_models = {} # {bssid: IsolationForest}
         self.ml_enabled = False
+        
+        self.monitored_ap = None
+        self.last_monitored_alert_ts = 0
+        
         import sys
         if sys.platform != "win32":
             import importlib.util
@@ -469,6 +473,20 @@ class DetectorEngine:
                 reason = layer.reason
                 
             now = time.time()
+            
+            if self.monitored_ap and (src_mac == self.monitored_ap or dst_mac == self.monitored_ap):
+                if now - self.last_monitored_alert_ts > 5.0:
+                    self.last_monitored_alert_ts = now
+                    self._trigger_alert(
+                        "Targeted Deauth Attack Detected",
+                        f"Deauthentication frames targeting your monitored AP ({self.monitored_ap}) detected.",
+                        {
+                            "attackers": [src_mac] if dst_mac == self.monitored_ap else [dst_mac],
+                            "targets": [self.monitored_ap],
+                            "severity": "CRITICAL"
+                        }
+                    )
+
             self.deauth_window.append({
                 "ts": now,
                 "src": src_mac,
